@@ -8,3 +8,12 @@ node_modules/
 .github/
 cloudinary_python.txt
 credentials.json
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.backup
+*.tfvars
+*.tfvars.json
+*.tfplan
+*.tfplan.json
+*.tfignore

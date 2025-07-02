@@ -34,5 +34,5 @@ module "vm" {
 
 resource "local_file" "IPs" {
   filename = "./inventory.csv"
-  content  = templatefile("manifest.tftpl", { ip_addrs = module.vm.*.ip })
+  content  = templatefile("manifest.tfpl", { ip_addrs = module.vm.*.ip })
 }
