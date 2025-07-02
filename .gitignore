@@ -17,3 +17,4 @@ credentials.json
 *.tfplan
 *.tfplan.json
 *.tfignore
+primenum3.py
