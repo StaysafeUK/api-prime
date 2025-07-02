@@ -70,21 +70,40 @@ urlpatterns = [
 ]
 EOT
 
-    # 5. Create views.py for the 'primenumbers' app
+    # 5. Create primenum3.py in the primenumbers app directory
+    cat <<'EOT' > /srv/api_project/primenumbers/primenum3.py
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n**0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+EOT
+
+    # 6. Create views.py for the 'primenumbers' app
     cat <<'EOT' > /srv/api_project/primenumbers/views.py
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from .primenum3 import is_prime
 
 @api_view(['GET'])
 def primenumbers_api(request):
-    pr = request.query_params.get('pr')
-    PL = request.query_params.get('PL')
-    # Placeholder logic for primenum3.py conversion
-    # You will need to replace this with your actual prime number calculation
+    pr_str = request.query_params.get('pr')
+    PL = request.query_params.get('PL') # PL is not used in is_prime, but kept for context
+    
+    is_prime_result = False
+    if pr_str:
+        try:
+            pr_int = int(pr_str)
+            is_prime_result = is_prime(pr_int)
+        except ValueError:
+            pass # Handle non-integer input if necessary
+
     response_data = {
-        'pr': pr,
+        'pr': pr_str,
         'PL': PL,
-        'result': 'This is a placeholder for your prime number calculation.'
+        'is_prime': is_prime_result
     }
     return Response(response_data)
 EOT
