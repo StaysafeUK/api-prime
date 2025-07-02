@@ -40,7 +40,41 @@ resource "google_compute_instance" "vm" {
     cd /srv/api_project
     python3 manage.py startapp api
 
-    # Configure Nginx
+    # --- Configure Django Project ---
+
+    # 1. Add '*' to ALLOWED_HOSTS for development.
+    #    For production, you should lock this down to your domain name.
+    sed -i "s/ALLOWED_HOSTS = []/ALLOWED_HOSTS = ['*']/" /srv/api_project/api_project/settings.py
+
+    # 2. Add the new 'api' app and 'rest_framework' to INSTALLED_APPS
+    sed -i "/'django.contrib.staticfiles',/a     'rest_framework',\n    'api'," /srv/api_project/api_project/settings.py
+
+    # 3. Create a simple API view for testing
+    cat <<'EOT' > /srv/api_project/api/views.py
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+
+@api_view(['GET'])
+def hello_world(request):
+    return Response({'message': 'Hello, world!'})
+EOT
+
+    # 4. Create a urls.py for the 'api' app
+    cat <<'EOT' > /srv/api_project/api/urls.py
+from django.urls import path
+from .views import hello_world
+
+urlpatterns = [
+    path('', hello_world, name='hello_world'),
+]
+EOT
+
+    # 5. Include the api urls in the main project urls.py
+    sed -i "/from django.urls import path/a from django.urls import include" /srv/api_project/api_project/urls.py
+    sed -i "/urlpatterns = [\n/a     path('api/', include('api.urls'))," /srv/api_project/api_project/urls.py
+
+
+    # --- Configure Nginx ---
     cat <<'EOT' > /etc/nginx/sites-available/default
     server {
         listen 80;
@@ -57,8 +91,11 @@ resource "google_compute_instance" "vm" {
 EOT
     systemctl restart nginx
 
-    # Start Django app
-    cd /srv/api_project && python3 manage.py runserver 0.0.0.0:8000 &
+    # --- Start Django App ---
+    # Run migrations and start the development server in the background
+    cd /srv/api_project
+    python3 manage.py migrate
+    python3 manage.py runserver 0.0.0.0:8000 &
     EOF
 }
 
