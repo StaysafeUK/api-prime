@@ -35,9 +35,13 @@ resource "google_compute_instance" "vm" {
     # Install Django and Django REST Framework
     pip3 install django djangorestframework
 
+    # Create /srv directory if it doesn't exist
+    mkdir -p /srv
+
     # Create Django project
     django-admin startproject api_project /srv/api_project
     cd /srv/api_project
+    echo "Django project created and navigating to /srv/api_project" >> /var/log/startup-script.log
     python3 manage.py startapp api
     python3 manage.py startapp primenumbers
 
@@ -143,8 +147,10 @@ EOT
     # --- Start Django App ---
     # Run migrations and start the development server in the background
     cd /srv/api_project
-    python3 manage.py migrate
-    python3 manage.py runserver 0.0.0.0:8000 &
+    python3 manage.py migrate >> /var/log/startup-script.log 2>&1
+    echo "Starting Django development server..." >> /var/log/startup-script.log
+    nohup python3 manage.py runserver 0.0.0.0:8000 >> /var/log/django-server.log 2>&1 &
+    echo "Django development server started." >> /var/log/startup-script.log
     EOF
 }
 
