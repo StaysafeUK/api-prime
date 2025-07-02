@@ -25,7 +25,7 @@ resource "google_compute_instance" "vm" {
     #!/bin/bash
     # Update and install packages
     apt-get update
-    apt-get install -y python3-pip nginx
+    apt-get install -y python3-pip
 
     # Install Docker
     apt-get install -y docker.io
@@ -34,6 +34,7 @@ resource "google_compute_instance" "vm" {
 
     # Install Django and Django REST Framework
     pip3 install django djangorestframework
+    pip3 install gunicorn
 
     # Create Django project
     django-admin startproject api_project /srv/api_project
@@ -123,28 +124,13 @@ EOT
     sed -i "/urlpatterns = [\n/a     path('api/', include('api.urls')),\n    path('api/primenumbers/', include('primenumbers.urls'))," /srv/api_project/api_project/urls.py
 
 
-    # --- Configure Nginx ---
-    cat <<'EOT' > /etc/nginx/sites-available/default
-    server {
-        listen 80;
-        server_name _;
-
-        location / {
-            proxy_pass http://127.0.0.1:8000;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-    }
-EOT
-    systemctl restart nginx
+    
 
     # --- Start Django App ---
     # Run migrations and start the development server in the background
     cd /srv/api_project
     python3 manage.py migrate
-    python3 manage.py runserver 0.0.0.0:8000 &
+    gunicorn api_project.wsgi:application --bind 0.0.0.0:8000 --daemon
     EOF
 }
 
