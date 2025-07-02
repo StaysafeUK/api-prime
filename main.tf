@@ -1,8 +1,8 @@
 provider "google" {
   credentials = file("credentials.json")
-  project     = "archejre"
-  region      = "europe-west2"
-  zone        = "europe-west2-a"
+  project     = "archejreterra"
+  region      = "europe-west1"
+  zone        = "europe-west1-b"
 }
 
 terraform {
@@ -23,7 +23,7 @@ terraform {
 
 variable "vm_names" {
   type    = list(string)
-  default = ["front-end", "back-end", "database"]
+  default = ["api-front-end"]
 }
 
 module "vm" {
@@ -34,5 +34,5 @@ module "vm" {
 
 resource "local_file" "IPs" {
   filename = "./inventory.csv"
-  content  = templatefile("manifest.tfpl", { ip_addrs = module.vm.*.ip })
+  content  = templatefile("manifest.tftpl", { ip_addrs = module.vm.*.ip })
 }

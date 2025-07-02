@@ -1,0 +1,4 @@
+ip_addresses
+%{ for ip in ip_addrs ~}
+${ip}
+%{ endfor ~}

@@ -5,8 +5,8 @@ variable "vm-name" {
 resource "google_compute_instance" "vm" {
 
 	name = var.vm-name
-	machine_type = "f1-micro"
- 	zone = "europe-west2-c"
+	machine_type = "n1-standard-2"
+ 	zone = "europe-west1-b"
  	boot_disk {
  		initialize_params {
  			image = "debian-cloud/debian-12"
