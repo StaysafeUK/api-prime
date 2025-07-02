@@ -1,5 +1,5 @@
 variable "vm-name" {
-  description = "api-prime"
+ description = "api-prime"
 }
 
 resource "google_compute_instance" "vm" {
@@ -21,94 +21,141 @@ resource "google_compute_instance" "vm" {
     }
   }
 
-  tags = [var.vm-name]
-
   metadata_startup_script = <<-EOF
-   #!/bin/bash
-set -x
-exec > /var/log/startup-script.log 2>&1
+    #!/bin/bash
+    # Update and install packages
+    apt-get update
+    apt-get install -y python3-pip nginx
 
-# Update and install packages
-apt-get update
-apt-get install -y python3-pip python3-venv
+    # Install Docker
+    apt-get install -y docker.io
+    systemctl start docker
+    systemctl enable docker
 
-# Install Docker (optional for this setup, but keeping as per original)
-apt-get install -y docker.io
-systemctl start docker
-systemctl enable docker
+    # Install Django and Django REST Framework
+    pip3 install django djangorestframework
 
-# Create /srv directory
-mkdir -p /srv/api_project
-cd /srv/api_project
+    # Create /srv directory if it doesn't exist
+    mkdir -p /srv
 
-# Set up virtual environment
-python3 -m venv /opt/api_prime_venv
-source /opt/api_prime_venv/bin/activate
+    # Create Django project
+    django-admin startproject api_project /srv/api_project
+    cd /srv/api_project
+    echo "Django project created and navigating to /srv/api_project" >> /var/log/startup-script.log
+    python3 manage.py startapp api
+    python3 manage.py startapp primenumbers
 
-# Install Python dependencies
-pip install --upgrade pip
-pip install django djangorestframework gunicorn
+    # --- Configure Django Project ---
 
-# Set up Django structure
-mkdir -p api_project api primenumbers
+    # 1. Add '*' to ALLOWED_HOSTS for development.
+    #    For production, you should lock this down to your domain name.
+    sed -i "s/ALLOWED_HOSTS = []/ALLOWED_HOSTS = ['*']/g" /srv/api_project/api_project/settings.py
 
-# Create manage.py
-cat <<'EOT' > manage.py
-#!/usr/bin/env python
-import os
-import sys
+    # 2. Add the new 'api' app, 'primenumbers' app and 'rest_framework' to INSTALLED_APPS
+    sed -i "/'django.contrib.staticfiles',/a     'rest_framework',\n    'api',\n    'primenumbers'," /srv/api_project/api_project/settings.py
 
-def main():
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'api_project.settings')
-    try:
-        from django.core.management import execute_from_command_line
-    except ImportError as exc:
-        raise ImportError(
-            "Couldn't import Django. Are you sure it's installed and "
-            "available on your PYTHONPATH environment variable? Did you "
-            "forget to activate a virtual environment?"
-        ) from exc
-    execute_from_command_line(sys.argv)
+    # 3. Create a simple API view for testing
+    cat <<'EOT' > /srv/api_project/api/views.py
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
 
-if __name__ == '__main__':
-    main()
-EOT
-chmod +x manage.py
-
-# Create necessary files (apps.py, urls.py, settings.py, views, etc.)
-# [UNCHANGED FROM YOUR ORIGINAL – THESE CAN STAY AS YOU HAD THEM]
-
-# Instead of hardcoding primenum3.py, move it if it were copied via GCS or from metadata.
-# For now, inject the uploaded version content
-cat <<'EOT' > primenumbers/primenum3.py
-$(cat /mnt/data/primenum3.py)
+@api_view(['GET'])
+def hello_world(request):
+    return Response({'message': 'Hello, world!'})
 EOT
 
-# Run migrations and collect static files
-cd /srv/api_project
-python manage.py migrate
-python manage.py collectstatic --noinput
+    # 4. Create a urls.py for the 'api' app
+    cat <<'EOT' > /srv/api_project/api/urls.py
+from django.urls import path
+from .views import hello_world
 
-# Start Gunicorn
-nohup gunicorn api_project.wsgi:application --bind 0.0.0.0:80 &
-EOF
+urlpatterns = [
+    path('', hello_world, name='hello_world'),
+]
+EOT
+
+    # 5. Create primenum3.py in the primenumbers app directory
+    cat <<'EOT' > /srv/api_project/primenumbers/primenum3.py
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n**0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+EOT
+
+    # 6. Create views.py for the 'primenumbers' app
+    cat <<'EOT' > /srv/api_project/primenumbers/views.py
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from .primenum3 import is_prime
+
+@api_view(['GET'])
+def primenumbers_api(request):
+    pr_str = request.query_params.get('pr')
+    PL = request.query_params.get('PL') # PL is not used in is_prime, but kept for context
+    
+    is_prime_result = False
+    if pr_str:
+        try:
+            pr_int = int(pr_str)
+            is_prime_result = is_prime(pr_int)
+        except ValueError:
+            pass # Handle non-integer input if necessary
+
+    response_data = {
+        'pr': pr_str,
+        'PL': PL,
+        'is_prime': is_prime_result
+    }
+    return Response(response_data)
+EOT
+
+    # 6. Create urls.py for the 'primenumbers' app
+    cat <<'EOT' > /srv/api_project/primenumbers/urls.py
+from django.urls import path
+from .views import primenumbers_api
+
+urlpatterns = [
+    path('', primenumbers_api, name='primenumbers_api'),
+]
+EOT
+
+    # 7. Include the api and primenumbers urls in the main project urls.py
+    sed -i "/from django.urls import path/a from django.urls import include" /srv/api_project/api_project/urls.py
+    sed -i "/urlpatterns = [\n/a     path('api/', include('api.urls')),\n    path('api/primenumbers/', include('primenumbers.urls'))," /srv/api_project/api_project/urls.py
+
+
+    # --- Configure Nginx ---
+    cat <<'EOT' > /etc/nginx/sites-available/default
+    server {
+        listen 80;
+        server_name _;
+
+        location / {
+            proxy_pass http://127.0.0.1:8000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+EOT
+    systemctl restart nginx
+
+    # --- Start Django App ---
+    # Run migrations and start the development server in the background
+    cd /srv/api_project
+    python3 manage.py migrate >> /var/log/startup-script.log 2>&1
+    echo "Starting Django development server..." >> /var/log/startup-script.log
+    nohup python3 manage.py runserver 0.0.0.0:8000 >> /var/log/django-server.log 2>&1 &
+    echo "Django development server started." >> /var/log/startup-script.log
+    EOF
 }
 
 output "ip" {
   value = resource.google_compute_instance.vm.network_interface.0.network_ip
-}
-
-resource "google_compute_firewall" "http_firewall" {
-  name    = "${var.vm-name}-http-firewall"
-  network = "default"
-
-  allow {
-    protocol = "tcp"
-    ports    = ["80"]
-  }
-
-  source_ranges = ["0.0.0.0/0"]
-  target_tags   = [var.vm-name]
 }
 
 output "external_ip" {
