@@ -15,4 +15,5 @@
    "files.autoSave": "off",
    "workbench.colorTheme": "Visual Studio Dark",
    "terminal.integrated.gpuAcceleration": "canvas",
+   "python.defaultInterpreterPath": "/Users/jrevans/Code/api-prime/prime_api_project/venv/bin/python"
 }
