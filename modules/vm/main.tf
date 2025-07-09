@@ -130,7 +130,7 @@ EOT
     # Run migrations and start the development server in the background
     cd /srv/api_project
     python3 manage.py migrate
-    gunicorn api_project.wsgi:application --bind 0.0.0.0:8000 --daemon
+    gunicorn divisible_api.wsgi:application --bind 0.0.0.0:8000 --daemon
     EOF
 }
 

@@ -5,17 +5,15 @@ from rest_framework import status
 
 class DivisibleView(APIView):
     """
-    API view to check if a number is divisible by another number.
+    API view to find the factors of a given number.
     """
-    def get(self, request, number, range_limits):
+    def get(self, request, number):
         try:
-            number= int(number)
-            range_limit = int(range_limit)
-            if number == 0:
-                return Response({"error": "Number cannot be zero."}, status=status.HTTP_400_BAD_REQUEST)
+            number = int(number)
+            if number <= 0:
+                return Response({"error": "Number must be a positive integer."}, status=status.HTTP_400_BAD_REQUEST)
             
-            divisibles = [i for i in range(1, range_limit + 1) if i % number == 0]
-            return Response({"divisibles": divisibles})
+            factors = [i for i in range(1, number + 1) if number % i == 0]
+            return Response({"factors": factors})
         except ValueError:
-            return Response({"error": "Invalid input. Please provide valid integers."}, status=status.HTTP_400_BAD_REQUEST)
-# Create your views here.
+            return Response({"error": "Invalid input. Please provide a valid integer."}, status=status.HTTP_400_BAD_REQUEST)
