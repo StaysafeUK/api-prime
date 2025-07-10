@@ -14,6 +14,9 @@ To use the API, you need to deploy the infrastructure using Terraform. The follo
 
 - `git_user`: Your GitHub username.
 - `git_pat`: Your GitHub Personal Access Token.
+- `example` : terraform apply -var="git_pat=github_pat_11MT2JJI086bp64cYVqca+GHJlwtkU8KuBGHJklxbBPII4timbTvvnbnYwwOMytrghZfCMCGHTJQDELLLLexample"
+
+Confirm that you have a token from GCP before continuing go to https://jrevansprofile.verifyus.co.uk/contact for details on how you can get a token.
 
 Once the infrastructure is deployed, the API will be available at the external IP address of the VM.
 
@@ -37,3 +40,7 @@ The API would return the following JSON response:
   "factors": [2, 2, 3]
 }
 ```
+
+select `http://<EXTERNAL_IP>:8000//api/divisible/12435/?format=json`
+
+for json format only.
