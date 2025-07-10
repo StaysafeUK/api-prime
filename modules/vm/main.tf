@@ -22,7 +22,10 @@ resource "google_compute_instance" "vm" {
   }
 
   metadata_startup_script = <<-EOF
-    #!/bin/bash
+    #!/bin/bash -e
+    # Exit immediately if a command exits with a non-zero status.
+    set -e
+
     # Update and install packages
     apt-get update
     apt-get install -y python3-pip git python3-venv
@@ -38,17 +41,23 @@ resource "google_compute_instance" "vm" {
     pip install -r /srv/api-prime/requirements.txt
 
     # --- Configure Django Project ---
+    echo "Configuring Django..."
     # Get the external IP address from metadata server
     EXTERNAL_IP=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)
+    echo "External IP: $EXTERNAL_IP"
 
     # Add the external IP to ALLOWED_HOSTS
-    sed -i "s/ALLOWED_HOSTS = \[\/ALLOWED_HOSTS = [\'$EXTERNAL_IP\']/g" /srv/api-prime/divisible_api/divisible_api/settings.py
+    sed -i "s/^ALLOWED_HOSTS = .*/ALLOWED_HOSTS = [\"$EXTERNAL_IP\"]/" /srv/api-prime/divisible_api/divisible_api/settings.py
+    echo "--- settings.py after modification ---"
+    cat /srv/api-prime/divisible_api/divisible_api/settings.py
+    echo "------------------------------------"
 
     # --- Start Django App ---
-    # Run migrations and start the development server in the background
+    echo "Starting Django app..."
     cd /srv/api-prime/divisible_api
     python3 manage.py migrate
     gunicorn divisible_api.wsgi:application --bind 0.0.0.0:8000 --daemon
+    echo "Gunicorn started."
     EOF
 }
 
