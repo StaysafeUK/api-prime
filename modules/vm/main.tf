@@ -13,8 +13,18 @@ variable "git_pat" {
   sensitive   = true
 }
 
+variable "git_project" {
+  description = "The GitHub project name to be cloned."
+  type        = string
+}
+
+variable "cloud_project" {
+  description = "The GCP project ID."
+  type        = string
+}
+
 resource "google_secret_manager_secret" "git-user-secret" {
-  project   = "archejreterra"
+  project   = var.cloud_project
   secret_id = "git-user"
 
   replication {
@@ -28,7 +38,7 @@ resource "google_secret_manager_secret_version" "git-user-secret-version" {
 }
 
 resource "google_secret_manager_secret" "git-pat-secret" {
-  project   = "archejreterra"
+  project   = var.cloud_project
   secret_id = "git-pat"
 
   replication {
@@ -89,7 +99,7 @@ resource "google_compute_instance" "vm" {
 
     # 3. Clone Repository.
     echo "Cloning private repository..."
-    git clone "https://$GIT_USER:$GIT_PAT@github.com/StaysafeUK/api-prime.git" /srv/api-prime
+    git clone "https://$GIT_USER:$GIT_PAT@github.com/StaysafeUK/${var.git_project}.git" /srv/api-prime
 
     # 4. Setup Virtual Environment.
     echo "Setting up Python virtual environment..."

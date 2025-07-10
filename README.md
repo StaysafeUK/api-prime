@@ -13,8 +13,8 @@ This API provides a simple way to find the prime factors of a given integer.
 To use the API, you need to deploy the infrastructure using Terraform. The following variables are required:
 
 - `git_user`: Your GitHub username.
-- `git_pat`: Your GitHub Personal Access Token.
-- `example` : terraform apply -var="git_pat=github_pat_11MT2JJI086bp64cYVqca+GHJlwtkU8KuBGHJklxbBPII4timbTvvnbnYwwOMytrghZfCMCGHTJQDELLLLexample"
+- `git_pat`:  Your GitHub Personal Access Token.
+- `example` : terraform apply -var="git_user=USERNAME" -var="git_pat=1MT2JJI086bp64cYVqca+GHJlwtkU8KuBGHJklxbBPII4BQvqEwfJrmdmqu7phjqovUy8OP423YCST8jYrQOIj" -var="git_project=GIT_PROJECT" -var="cloud_project=CLOUD PROJECT_GCP"
 
 Confirm that you have a token from GCP before continuing go to https://jrevansprofile.verifyus.co.uk/contact for details on how you can get a token.
 
