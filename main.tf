@@ -26,16 +26,9 @@ variable "vm_names" {
   default = ["api-front-end"]
 }
 
-variable "git_pat" {
-  description = "The Personal Access Token for cloning the private Git repository."
-  type        = string
-  sensitive   = true
-}
-
 module "vm" {
   source  = "./modules/vm"
   vm-name = var.vm_names[count.index]
-  git_pat = var.git_pat
   count   = length(var.vm_names)
 }
 
