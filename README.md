@@ -38,7 +38,6 @@ The API would return the following JSON response:
 
 ```json
 {
-  "number": 12,
   "factors": [2, 2, 3]
 }
 ```
