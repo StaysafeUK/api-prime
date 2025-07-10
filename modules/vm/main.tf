@@ -13,7 +13,7 @@ resource "google_secret_manager_secret" "git-pat-secret" {
   secret_id = "git-pat"
 
   replication {
-    automatic {}
+    auto {}
   }
 }
 
@@ -59,7 +59,7 @@ resource "google_compute_instance" "vm" {
 
     # --- Clone Repository ---
     echo "Cloning private repository..."
-    git clone "https://jrevans:${GIT_PAT}@github.com/StaysafeUK/api-prime.git" /srv/api-prime
+    git clone "https://jrevans:$GIT_PAT@github.com/StaysafeUK/api-prime.git" /srv/api-prime
 
     # --- Setup Virtual Environment ---
     echo "Setting up Python virtual environment..."
