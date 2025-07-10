@@ -13,7 +13,7 @@ resource "google_secret_manager_secret" "git-pat-secret" {
   secret_id = "git-pat"
 
   replication {
-    automatic = true
+    automatic {}
   }
 }
 
