@@ -1,47 +1,24 @@
 variable "vm-name" {
-  description = "api-prime"
-}
-
-variable "git_pat" {
-  description = "The Personal Access Token for cloning the private Git repository."
-  type        = string
-  sensitive   = true
-}
-
-resource "google_secret_manager_secret" "git-pat-secret" {
-  project   = "archejreterra" # IMPORTANT: Replace with your GCP Project ID
-  secret_id = "git-pat"
-
-  replication {
-    automatic = true
-  }
-}
-
-resource "google_secret_manager_secret_version" "git-pat-secret-version" {
-  secret      = google_secret_manager_secret.git-pat-secret.id
-  secret_data = var.git_pat
+ description = "api-prime"
 }
 
 resource "google_compute_instance" "vm" {
-  name         = var.vm-name
-  machine_type = "n1-standard-2"
-  zone         = "europe-west1-b"
 
-  boot_disk {
-    initialize_params {
-      image = "debian-cloud/debian-12"
-    }
-  }
+	name = var.vm-name
+	machine_type = "n1-standard-2"
+ 	zone = "europe-west1-b"
+ 	boot_disk {
+ 		initialize_params {
+ 			image = "debian-cloud/debian-12"
+	 }
 
-  network_interface {
+ }
+
+	 network_interface {
     network = "default"
     access_config {
       // Ephemeral external IP
     }
-  }
-
-  service_account {
-    scopes = ["cloud-platform"]
   }
 
   metadata_startup_script = <<-EOF
@@ -51,18 +28,12 @@ resource "google_compute_instance" "vm" {
 
     # Update and install packages
     apt-get update
-    apt-get install -y python3-pip git python3-venv google-cloud-sdk
+    apt-get install -y python3-pip git python3-venv
 
-    # --- Fetch Git Credentials ---
-    echo "Fetching Git PAT from Secret Manager..."
-    GIT_PAT=$(gcloud secrets versions access latest --secret="git-pat" --project="archejreterra") # IMPORTANT: Replace with your GCP Project ID
+    # Clone the private repository
+    git clone https://jrevans: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@github.com/StaysafeUK/api-prime.git /srv/api-prime
 
-    # --- Clone Repository ---
-    echo "Cloning private repository..."
-    git clone "https://jrevans:${GIT_PAT}@github.com/StaysafeUK/api-prime.git" /srv/api-prime
-
-    # --- Setup Virtual Environment ---
-    echo "Setting up Python virtual environment..."
+    # Create and activate a virtual environment
     python3 -m venv /srv/api-prime/venv
     source /srv/api-prime/venv/bin/activate
 
@@ -71,10 +42,16 @@ resource "google_compute_instance" "vm" {
 
     # --- Configure Django Project ---
     echo "Configuring Django..."
+    # Get the external IP address from metadata server
     EXTERNAL_IP=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)
     echo "External IP: $EXTERNAL_IP"
+
+    # Add the external IP to ALLOWED_HOSTS
     sed -i "s/^ALLOWED_HOSTS = .*/ALLOWED_HOSTS = [\"$EXTERNAL_IP\"]/" /srv/api-prime/divisible_api/divisible_api/settings.py
-    
+    echo "--- settings.py after modification ---"
+    cat /srv/api-prime/divisible_api/divisible_api/settings.py
+    echo "------------------------------------"
+
     # --- Start Django App ---
     echo "Starting Django app..."
     cd /srv/api-prime/divisible_api
@@ -97,9 +74,9 @@ resource "google_compute_firewall" "allow-http-8000" {
 }
 
 output "ip" {
-  value = google_compute_instance.vm.network_interface[0].network_ip
+  value = resource.google_compute_instance.vm.network_interface.0.network_ip
 }
 
 output "external_ip" {
-  value = google_compute_instance.vm.network_interface[0].access_config[0].nat_ip
+  value = resource.google_compute_instance.vm.network_interface.0.access_config.0.nat_ip
 }
