@@ -13,6 +13,20 @@ variable "git_pat" {
   sensitive   = true
 }
 
+resource "google_secret_manager_secret" "git-user-secret" {
+  project   = "archejreterra"
+  secret_id = "git-user"
+
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "git-user-secret-version" {
+  secret      = google_secret_manager_secret.git-user-secret.id
+  secret_data = var.git_user
+}
+
 resource "google_secret_manager_secret" "git-pat-secret" {
   project   = "archejreterra"
   secret_id = "git-pat"
@@ -69,12 +83,13 @@ resource "google_compute_instance" "vm" {
     apt-get install -y python3-pip git python3-venv google-cloud-sdk
 
     # 2. Fetch Git Credentials.
-    echo "Fetching Git PAT from Secret Manager..."
+    echo "Fetching Git User and PAT from Secret Manager..."
+    GIT_USER=$(gcloud secrets versions access latest --secret="git-user" --project="archejreterra")
     GIT_PAT=$(gcloud secrets versions access latest --secret="git-pat" --project="archejreterra")
 
     # 3. Clone Repository.
     echo "Cloning private repository..."
-    git clone "https://${var.git_user}:$GIT_PAT@github.com/StaysafeUK/api-prime.git" /srv/api-prime
+    git clone "https://$GIT_USER:$GIT_PAT@github.com/StaysafeUK/api-prime.git" /srv/api-prime
 
     # 4. Setup Virtual Environment.
     echo "Setting up Python virtual environment..."
