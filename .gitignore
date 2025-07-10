@@ -18,3 +18,5 @@ credentials.json
 *.tfplan.json
 *.tfignore
 primenum3.py
+venv/
+*.venv
