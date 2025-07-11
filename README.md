@@ -29,6 +29,7 @@ The API has a single endpoint:
 - `GET /<integer>`: Returns the prime factors of the given integer.
 - `GET /api/list/<integer>`: Returns a list of prime numbers.
 - `GET /api/prime_next/<integer>`: Returns the next prime number in the series.
+- `GET /api/prime_prev/<integer>`: Returns the previous prime number in the series.
 
 ## Example
 
@@ -47,5 +48,6 @@ The API would return the following JSON response:
 `select for Divisibles` : `http://<EXTERNAL_IP>:8000/api/divisible/12435/?format=json`
 `select for list of primes` : `http://<EXTERNAL_IP>:8000/api/list/100/?format=json`
 `select for next prime` : `http://<EXTERNAL_IP>:8000/api/prime_next/12/?format=json`
+`select for previous prime` : `http://<EXTERNAL_IP>:8000/api/prime_prev/12/?format=json`
 
 for json format only.
