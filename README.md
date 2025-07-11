@@ -1,6 +1,6 @@
-# Prime Number Factor API
+# Prime Number API
 
-This API provides a simple way to find the prime factors of a given integer.
+This API provides a simple way to find the prime factors of a given integer and list of prime numbers.
 
 ## Index
 
@@ -27,6 +27,7 @@ Once the infrastructure is deployed, the API will be available at the external I
 The API has a single endpoint:
 
 - `GET /<integer>`: Returns the prime factors of the given integer.
+- `GET /api/list/<integer>`: Returns a list of prime numbers.
 
 ## Example
 
@@ -42,6 +43,7 @@ The API would return the following JSON response:
 }
 ```
 
-select `http://<EXTERNAL_IP>:8000/api/divisible/12435/?format=json`
+`select for Divisibles` : `http://<EXTERNAL_IP>:8000/api/divisible/12435/?format=json`
+`select for list of primes` : `http://<EXTERNAL_IP>:8000/api/list/100/?format=json`
 
 for json format only.
