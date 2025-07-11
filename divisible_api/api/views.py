@@ -65,3 +65,26 @@ class NextPrimeView(APIView):
                 num += 1
         except ValueError:
             return Response({"error": "Invalid input. Please provide a valid integer."}, status=status.HTTP_400_BAD_REQUEST)
+
+class PreviousPrimeView(APIView):
+    """
+    API view to get the previous prime number.
+    """
+    def get(self, request, number):
+        try:
+            number = int(number)
+            if number <= 2:
+                return Response({"error": "No prime number less than the given number."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            num = number - 1
+            while True:
+                is_prime = True
+                for i in range(2, int(num**0.5) + 1):
+                    if num % i == 0:
+                        is_prime = False
+                        break
+                if is_prime:
+                    return Response({"previous_prime": num})
+                num -= 1
+        except ValueError:
+            return Response({"error": "Invalid input. Please provide a valid integer."}, status=status.HTTP_400_BAD_REQUEST)

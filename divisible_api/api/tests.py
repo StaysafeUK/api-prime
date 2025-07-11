@@ -56,3 +56,30 @@ class NextPrimeViewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, {'error': 'Number must be a non-negative integer.'})
 
+class PreviousPrimeViewTests(APITestCase):
+    def test_previous_prime_success(self):
+        """
+        Ensure we can get the previous prime number.
+        """
+        url = '/api/prime_prev/7/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {'previous_prime': 5})
+
+    def test_previous_prime_invalid_input(self):
+        """
+        Ensure invalid input is handled correctly.
+        """
+        url = '/api/prime_prev/abc/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_previous_prime_no_prime(self):
+        """
+        Ensure no prime number is returned when there are no smaller primes.
+        """
+        url = '/api/prime_prev/2/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {'error': 'No prime number less than the given number.'})
+
