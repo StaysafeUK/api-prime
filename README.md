@@ -45,9 +45,9 @@ The API would return the following JSON response:
 }
 ```
 
-`select for Divisibles` : `http://<EXTERNAL_IP>:8000/api/divisible/12435/?format=json`
+`select for Divisibles`     : `http://<EXTERNAL_IP>:8000/api/divisible/12435/?format=json`
 `select for list of primes` : `http://<EXTERNAL_IP>:8000/api/list/100/?format=json`
-`select for next prime` : `http://<EXTERNAL_IP>:8000/api/prime_next/12/?format=json`
+`select for next prime`     : `http://<EXTERNAL_IP>:8000/api/prime_next/12/?format=json`
 `select for previous prime` : `http://<EXTERNAL_IP>:8000/api/prime_prev/12/?format=json`
 
 for json format only.
