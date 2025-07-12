@@ -20,3 +20,4 @@ credentials.json
 primenum3.py
 venv/
 *.venv
+*.secrets.tf

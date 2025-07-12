@@ -23,7 +23,7 @@ terraform {
 
 variable "vm_names" {
   type    = list(string)
-  default = ["api-front-end"]
+  default = ["api-front-end", "api-front-end2"]
 }
 
 variable "git_user" {
@@ -62,4 +62,21 @@ module "vm" {
 resource "local_file" "IPs" {
   filename = "./inventory.csv"
   content  = templatefile("manifest.tftpl", { ip_addrs = module.vm.*.ip })
+}
+
+data "external" "firewall_exists" {
+  program = ["bash", "-c", "gcloud compute firewall-rules describe allow-http-8000 --project=${var.cloud_project} >/dev/null 2>&1 && echo '{\"exists\": \"true\"}' || echo '{\"exists\": \"false\"}'"]
+}
+
+resource "google_compute_firewall" "allow-http-8000" {
+  count   = data.external.firewall_exists.result.exists == "true" ? 0 : 1
+  name    = "allow-http-8000"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["8000"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
 }

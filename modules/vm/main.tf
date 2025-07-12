@@ -23,33 +23,7 @@ variable "cloud_project" {
   type        = string
 }
 
-resource "google_secret_manager_secret" "git-user-secret" {
-  project   = var.cloud_project
-  secret_id = "git-user"
 
-  replication {
-    auto {}
-  }
-}
-
-resource "google_secret_manager_secret_version" "git-user-secret-version" {
-  secret      = google_secret_manager_secret.git-user-secret.id
-  secret_data = var.git_user
-}
-
-resource "google_secret_manager_secret" "git-pat-secret" {
-  project   = var.cloud_project
-  secret_id = "git-pat"
-
-  replication {
-    auto {}
-  }
-}
-
-resource "google_secret_manager_secret_version" "git-pat-secret-version" {
-  secret      = google_secret_manager_secret.git-pat-secret.id
-  secret_data = var.git_pat
-}
 
 resource "google_compute_instance" "vm" {
   name         = var.vm-name
@@ -85,12 +59,13 @@ resource "google_compute_instance" "vm" {
     exec &> /var/log/startup.log
 
     set -x # Print each command before it's executed.
+    set -e # Exit immediately if a command exits with a non-zero status.
 
     echo "--- Starting Startup Script ---"
 
     # 1. Install only essential packages.
     apt-get update
-    apt-get install -y python3-pip git python3-venv google-cloud-sdk
+    apt-get install -y python3-pip git python3-venv google-cloud-sdk jq
 
     # 2. Fetch Git Credentials.
     echo "Fetching Git User and PAT from Secret Manager..."
@@ -100,6 +75,10 @@ resource "google_compute_instance" "vm" {
     # 3. Clone Repository.
     echo "Cloning private repository..."
     git clone "https://$GIT_USER:$GIT_PAT@github.com/StaysafeUK/${var.git_project}.git" /srv/api-prime
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Failed to clone repository. Please check your Git credentials (Personal Access Token) and repository permissions."
+        exit 1
+    fi
 
     # 4. Setup Virtual Environment.
     echo "Setting up Python virtual environment..."
@@ -112,16 +91,39 @@ resource "google_compute_instance" "vm" {
 
     # 6. Configure Django Project.
     echo "Configuring Django..."
-    # Find the correct settings.py, excluding the venv directory.
-    SETTINGS_FILE=$(find /srv/api-prime -path /srv/api-prime/venv -prune -o -name settings.py -print | head -n 1)
-    if [ -z "$SETTINGS_FILE" ]; then
-        echo "ERROR: settings.py not found!"
+    SETTINGS_FILE=/srv/api-prime/divisible_api/divisible_api/settings.py
+    if [ ! -f "$SETTINGS_FILE" ]; then
+        echo "ERROR: settings.py not found at $SETTINGS_FILE!"
         exit 1
     fi
     echo "Found settings.py at $SETTINGS_FILE"
     EXTERNAL_IP=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)
     echo "External IP: $EXTERNAL_IP"
-    sed -i "s/^ALLOWED_HOSTS = .*/ALLOWED_HOSTS = [\"$EXTERNAL_IP\", \"localhost\", \"127.0.0.1\"]/" "$SETTINGS_FILE"
+
+    # Get the current list of IPs from Secret Manager
+    ALLOWED_HOSTS_JSON=$(gcloud secrets versions access latest --secret="allowed-hosts-ips" --project="${var.cloud_project}")
+
+    ALLOWED_HOSTS_JSON=$(echo "$ALLOWED_HOSTS_JSON" | jq --arg ip "$EXTERNAL_IP" '[.[] | select(. != null)] + [$ip, "localhost", "127.0.0.1"] | unique')
+
+    # Convert the JSON array to a Python list string
+    ALLOWED_HOSTS_PYTHON_LIST=$(echo "$ALLOWED_HOSTS_JSON" | jq -c '.')
+
+    # Update the secret with the new list of IPs
+    echo "$ALLOWED_HOSTS_JSON" > /tmp/allowed-hosts-ips.json
+    gcloud secrets versions add allowed-hosts-ips --data-file=/tmp/allowed-hosts-ips.json --project="${var.cloud_project}"
+
+    # Update the settings.py file
+    echo "Attempting to modify ALLOWED_HOSTS in $SETTINGS_FILE..."
+    sed -i "s/^ALLOWED_HOSTS = .*/ALLOWED_HOSTS = $ALLOWED_HOSTS_PYTHON_LIST/" "$SETTINGS_FILE"
+    if [ $? -eq 0 ]; then
+        echo "Successfully modified ALLOWED_HOSTS."
+        echo "--- Contents of settings.py after modification ---"
+        cat "$SETTINGS_FILE"
+        echo "--- End of settings.py ---"
+    else
+        echo "ERROR: Failed to modify ALLOWED_HOSTS."
+        exit 1
+    fi
     
     # 7. Start Django App.
     echo "Starting Django app..."
@@ -151,17 +153,7 @@ resource "google_compute_instance" "vm" {
     EOF
 }
 
-resource "google_compute_firewall" "allow-http-8000" {
-  name    = "allow-http-8000"
-  network = "default"
 
-  allow {
-    protocol = "tcp"
-    ports    = ["8000"]
-  }
-
-  source_ranges = ["0.0.0.0/0"]
-}
 
 output "ip" {
   value = google_compute_instance.vm.network_interface[0].network_ip
