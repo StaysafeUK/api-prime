@@ -55,6 +55,7 @@ resource "google_compute_instance" "vm" {
 
   metadata_startup_script = <<-EOF
     #!/bin/bash
+    echo '--- Starting Startup Script ---'
     # Log all output to a file and the console.
     exec &> /var/log/startup.log
 
@@ -131,7 +132,7 @@ resource "google_compute_instance" "vm" {
     if [ -z "$MANAGE_PY_DIR" ]; then
         echo "ERROR: manage.py not found!"
         exit 1
-    fi # Corrected syntax from } to fi
+    fi
     echo "Found manage.py in $MANAGE_PY_DIR"
     cd "$MANAGE_PY_DIR"
     WSGI_FILE=$(find . -name wsgi.py | head -n 1)
