@@ -17,7 +17,7 @@ To use the API, you need to deploy the infrastructure using Terraform. The follo
 - `git_project`.    : Your Github project
 - `cloud_project`   : Your Cloud Project GCP
 - `instance_count`  : Number of instances to apply
-- `Terraform`       : terraform apply -var="instance_count=2" -var="git_user=USERNAME" -var="git_pat=1MT2JJI086bp64cYVqEXAMPLETOKENI4BQvqEwfJrmdmqu7phjqovUy8OP423YCST8jYrQOIj" -var="git_project=GIT_PROJECT" -var="cloud_project=CLOUD PROJECT_GCP"
+- `Terraform`       : ```trf terraform apply -var="instance_count=2" -var="git_user=USERNAME" -var="git_pat=1MT2JJI086bp64cYVqEXAMPLETOKENI4BQvqEwfJrmdmqu7phjqovUy8OP423YCST8jYrQOIj" -var="git_project=GIT_PROJECT" -var="cloud_project=CLOUD PROJECT_GCP" ```
 
 Confirm that you have a token from GCP before continuing go to https://jrevansprofile.verifyus.co.uk/contact for details on how you can get a token.
 
