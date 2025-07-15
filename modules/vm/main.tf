@@ -84,7 +84,7 @@ resource "google_compute_instance" "vm" {
 
     # 1. Install only essential packages.
     apt-get update
-    apt-get install -y python3-pip git python3-venv google-cloud-sdk jq
+    apt-get install -y python3-pip git python3-venv google-cloud-sdk jq ufw
 
     # 2. Fetch Git Credentials.
     echo "Fetching Git User and PAT from Secret Manager..."
