@@ -56,7 +56,7 @@ The API would return the following JSON response:
 `select for Divisibles`     : `curl 'http://localhost:8000//api/divisible/12435/?format=json`
 `select for list of primes` : `curl 'http://localhost:8000//api/list/100/?format=json`
 `select for next prime`     : `curl 'http://localhost:8000//api/prime_next/12/?format=json`
-`select for previous prime` : `curl 'http://localhost:8000/:8000/api/prime_prev/12/?format=json`
-`select for All`            : `curl 'http://localhost:8000/:8000/api/all/12/?format=json`
+`select for previous prime` : `curl 'http://localhost:8000//api/prime_prev/12/?format=json`
+`select for All`            : `curl 'http://localhost:8000//api/all/12/?format=json`
 
 for json format only.
