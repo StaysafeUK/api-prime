@@ -88,3 +88,66 @@ class PreviousPrimeView(APIView):
                 num -= 1
         except ValueError:
             return Response({"error": "Invalid input. Please provide a valid integer."}, status=status.HTTP_400_BAD_REQUEST)
+
+class AllInOneView(APIView):
+    """
+    API view to get all the results from the other APIs.
+    """
+    def get(self, request, number):
+        try:
+            number = int(number)
+            if number <= 0:
+                return Response({"error": "Number must be a positive integer."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Divisible
+            factors = [i for i in range(1, number + 1) if number % i == 0]
+
+            # Prime List
+            primes = []
+            num = 2
+            while len(primes) < number:
+                is_prime = True
+                for i in range(2, int(num**0.5) + 1):
+                    if num % i == 0:
+                        is_prime = False
+                        break
+                if is_prime:
+                    primes.append(num)
+                num += 1
+
+            # Next Prime
+            next_prime_num = number + 1
+            while True:
+                is_prime = True
+                for i in range(2, int(next_prime_num**0.5) + 1):
+                    if next_prime_num % i == 0:
+                        is_prime = False
+                        break
+                if is_prime:
+                    next_prime = next_prime_num
+                    break
+                next_prime_num += 1
+
+            # Previous Prime
+            previous_prime = None
+            if number > 2:
+                prev_prime_num = number - 1
+                while prev_prime_num > 1:
+                    is_prime = True
+                    for i in range(2, int(prev_prime_num**0.5) + 1):
+                        if prev_prime_num % i == 0:
+                            is_prime = False
+                            break
+                    if is_prime:
+                        previous_prime = prev_prime_num
+                        break
+                    prev_prime_num -= 1
+
+            return Response({
+                "divisible": factors,
+                "list": primes,
+                "prime_next": next_prime,
+                "prime_prev": previous_prime
+            })
+        except ValueError:
+            return Response({"error": "Invalid input. Please provide a valid integer."}, status=status.HTTP_400_BAD_REQUEST)
