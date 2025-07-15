@@ -46,7 +46,7 @@ resource "google_compute_instance" "vm" {
   name         = "${var.vm-name}-${count.index}"
   machine_type = "n1-standard-2"
   zone         = "europe-west1-b"
-  tags         = [var.vm-name]
+  tags         = [var.vm-name, "http-server"]
 
   lifecycle {
     ignore_changes = [
@@ -269,7 +269,7 @@ resource "google_compute_firewall" "allow_lb_health_checks" {
   }
 
   source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
-  target_tags   = [var.vm-name]
+  target_tags   = ["http-server"]
 }
 
 resource "google_compute_firewall" "allow_lb_traffic" {
@@ -283,5 +283,5 @@ resource "google_compute_firewall" "allow_lb_traffic" {
   }
 
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = [var.vm-name]
+  target_tags   = ["http-server"]
 }
