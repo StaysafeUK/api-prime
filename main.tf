@@ -21,9 +21,9 @@ terraform {
   }
 }
 
-variable "vm_names" {
-  type    = list(string)
-  default = ["api-front-end", "api-front-end2"]
+variable "cloud_project" {
+  description = "The GCP project ID."
+  type        = string
 }
 
 variable "git_user" {
@@ -32,31 +32,39 @@ variable "git_user" {
   default     = "jrevans"
 }
 
-variable "git_pat" {
-  description = "The Personal Access Token for cloning the private Git repository."
-  type        = string
-  sensitive   = true
-}
-
 variable "git_project" {
   description = "The GitHub project name to be cloned."
   type        = string
   default     = "api-prime"
 }
 
-variable "cloud_project" {
-  description = "The GCP project ID."
+variable "git_pat" {
+  description = "The Personal Access Token for cloning the private Git repository."
   type        = string
+  sensitive   = true
+}
+
+variable "instance_count" {
+  description = "The number of VM instances to create."
+  type        = number
+  default     = 1
+}
+
+variable "region" {
+  description = "The region to deploy the resources in."
+  type        = string
+  default     = "europe-west1"
 }
 
 module "vm" {
-  source        = "./modules/vm"
-  vm-name       = var.vm_names[count.index]
-  git_user      = var.git_user
-  git_pat       = var.git_pat
-  git_project   = var.git_project
-  cloud_project = var.cloud_project
-  count         = length(var.vm_names)
+  source           = "./modules/vm"
+  vm-name          = "api-prime"
+  git_user         = var.git_user
+  git_pat          = var.git_pat
+  git_project      = var.git_project
+  cloud_project    = var.cloud_project
+  instance_count   = var.instance_count
+  region           = var.region
 }
 
 resource "local_file" "IPs" {

@@ -1,3 +1,7 @@
+
+
+
+
 variable "vm-name" {
   description = "api-prime"
 }
@@ -23,12 +27,26 @@ variable "cloud_project" {
   type        = string
 }
 
+variable "instance_count" {
+  description = "The number of VM instances to create."
+  type        = number
+  default     = 1
+}
+
+variable "region" {
+  description = "The region to deploy the resources in."
+  type        = string
+  default     = "europe-west1"
+}
+
 
 
 resource "google_compute_instance" "vm" {
-  name         = var.vm-name
+  count        = var.instance_count
+  name         = "${var.vm-name}-${count.index}"
   machine_type = "n1-standard-2"
   zone         = "europe-west1-b"
+  tags         = [var.vm-name]
 
   lifecycle {
     ignore_changes = [
@@ -157,9 +175,99 @@ resource "google_compute_instance" "vm" {
 
 
 output "ip" {
-  value = google_compute_instance.vm.network_interface[0].network_ip
+  value = google_compute_instance.vm[*].network_interface[0].network_ip
 }
 
 output "external_ip" {
-  value = google_compute_instance.vm.network_interface[0].access_config[0].nat_ip
+  value = google_compute_instance.vm[*].network_interface[0].access_config[0].nat_ip
+}
+
+resource "google_compute_address" "lb_ip" {
+  count  = var.instance_count > 1 ? 1 : 0
+  name   = "${var.vm-name}-lb-ip"
+  region = var.region
+}
+
+resource "google_compute_instance_group" "unmanaged" {
+  count = var.instance_count > 1 ? 1 : 0
+  name  = "${var.vm-name}-unmanaged-instance-group"
+  zone  = "europe-west1-b"
+
+  instances = google_compute_instance.vm[*].self_link
+}
+
+resource "google_compute_health_check" "http_health_check" {
+  count               = var.instance_count > 1 ? 1 : 0
+  name                = "${var.vm-name}-http-health-check"
+  check_interval_sec  = 5
+  timeout_sec         = 5
+  healthy_threshold   = 2
+  unhealthy_threshold = 2
+
+  http_health_check {
+    port         = 8000
+    request_path = "/"
+  }
+}
+
+resource "google_compute_backend_service" "backend_service" {
+  count                 = var.instance_count > 1 ? 1 : 0
+  name                  = "${var.vm-name}-backend-service"
+  protocol              = "HTTP"
+  port_name             = "http"
+  load_balancing_scheme = "EXTERNAL_MANAGED"
+  health_checks         = [google_compute_health_check.http_health_check[0].self_link]
+
+  backend {
+    group = google_compute_instance_group.unmanaged[0].self_link
+  }
+}
+
+resource "google_compute_url_map" "url_map" {
+  count           = var.instance_count > 1 ? 1 : 0
+  name            = "${var.vm-name}-url-map"
+  default_service = google_compute_backend_service.backend_service[0].self_link
+}
+
+resource "google_compute_target_http_proxy" "http_proxy" {
+  count   = var.instance_count > 1 ? 1 : 0
+  name    = "${var.vm-name}-http-proxy"
+  url_map = google_compute_url_map.url_map[0].self_link
+}
+
+resource "google_compute_global_forwarding_rule" "forwarding_rule" {
+  count                 = var.instance_count > 1 ? 1 : 0
+  name                  = "${var.vm-name}-forwarding-rule"
+  target                = google_compute_target_http_proxy.http_proxy[0].self_link
+  ip_address            = google_compute_address.lb_ip[0].address
+  port_range            = "8080"
+  load_balancing_scheme = "EXTERNAL_MANAGED"
+}
+
+resource "google_compute_firewall" "allow_lb_health_checks" {
+  count   = var.instance_count > 1 ? 1 : 0
+  name    = "${var.vm-name}-allow-lb-health-checks"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["8000"]
+  }
+
+  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
+  target_tags   = [var.vm-name]
+}
+
+resource "google_compute_firewall" "allow_lb_traffic" {
+  count   = var.instance_count > 1 ? 1 : 0
+  name    = "${var.vm-name}-allow-lb-traffic"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["8080"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags   = [var.vm-name]
 }
