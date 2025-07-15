@@ -7,4 +7,5 @@ urlpatterns = [
     re_path(r'^prime_next/(?P<number>-?\d+)/$', views.NextPrimeView.as_view(), name='prime_next'),
     re_path(r'^prime_prev/(?P<number>-?\d+)/$', views.PreviousPrimeView.as_view(), name='prime_prev'),
     path('all/<int:number>/', views.AllInOneView.as_view(), name='all'),
+    path('health/', views.HealthCheckView.as_view(), name='health_check'),
 ]

@@ -182,10 +182,9 @@ output "external_ip" {
   value = google_compute_instance.vm[*].network_interface[0].access_config[0].nat_ip
 }
 
-resource "google_compute_address" "lb_ip" {
+resource "google_compute_global_address" "lb_ip" {
   count  = var.instance_count > 1 ? 1 : 0
   name   = "${var.vm-name}-lb-ip"
-  region = var.region
 }
 
 resource "google_compute_instance_group" "unmanaged" {
@@ -206,7 +205,7 @@ resource "google_compute_health_check" "http_health_check" {
 
   http_health_check {
     port         = 8000
-    request_path = "/"
+    request_path = "/api/health/"
   }
 }
 
@@ -220,6 +219,10 @@ resource "google_compute_backend_service" "backend_service" {
 
   backend {
     group = google_compute_instance_group.unmanaged[0].self_link
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
@@ -239,7 +242,7 @@ resource "google_compute_global_forwarding_rule" "forwarding_rule" {
   count                 = var.instance_count > 1 ? 1 : 0
   name                  = "${var.vm-name}-forwarding-rule"
   target                = google_compute_target_http_proxy.http_proxy[0].self_link
-  ip_address            = google_compute_address.lb_ip[0].address
+  ip_address            = google_compute_global_address.lb_ip[0].address
   port_range            = "8080"
   load_balancing_scheme = "EXTERNAL_MANAGED"
 }
@@ -265,7 +268,7 @@ resource "google_compute_firewall" "allow_lb_traffic" {
 
   allow {
     protocol = "tcp"
-    ports    = ["8080"]
+    ports    = ["8000"]
   }
 
   source_ranges = ["0.0.0.0/0"]

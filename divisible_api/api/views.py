@@ -151,3 +151,10 @@ class AllInOneView(APIView):
             })
         except ValueError:
             return Response({"error": "Invalid input. Please provide a valid integer."}, status=status.HTTP_400_BAD_REQUEST)
+
+class HealthCheckView(APIView):
+    """
+    A simple view for the load balancer health check.
+    """
+    def get(self, request):
+        return Response(status=status.HTTP_200_OK)

@@ -69,7 +69,7 @@ module "vm" {
 
 resource "local_file" "IPs" {
   filename = "./inventory.csv"
-  content  = templatefile("manifest.tftpl", { ip_addrs = module.vm.*.ip })
+  content  = templatefile("manifest.tftpl", { ip_addrs = flatten(module.vm.*.external_ip) })
 }
 
 data "external" "firewall_exists" {
