@@ -11,7 +11,7 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application's code into the container at /app
-COPY . /app/
+COPY divisible_api/ /app/
 
 # Expose port 8000 to the outside world
 EXPOSE 8000
