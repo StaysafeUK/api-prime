@@ -14,12 +14,15 @@ The API is built using a Docker Container
 
 To use the API, you need to deploy the infrastructure using Docker. Ensure you have docker-compose on your conputer.
 
-- `DIRECTORY`       : ../api-prime/divisible_api
-- `docker-compose`  : docker-compose up
+- `docker build (GCP)`  : docker build -t gcr.io/your-project-id/divisible-api:latest divisible_api/
+- `docker push (GCP)`   : docker push gcr.io/your-project-id/divisible-api:latest
 ```trf 
-docker-compose up
-curl 'http://localhost:8000/api/list/12/?format=json' 
-{"primes":[2,3,5,7,11,13,17,19,23,29,31,37]}%  
+gcloud container clusters get-credentials futuregkecluster --zone your-cluster-zone
+     --project your-project-id
+
+kubectl apply -f deployment.yaml
+
+kubectl get services
 
 ```
 
