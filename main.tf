@@ -58,11 +58,11 @@ variable "region" {
 
 module "vm" {
   source           = "./modules/vm"
-  vm-name          = "api-prime"
+  vm-name          = "api-frontend"
   git_user         = var.git_user
   git_pat          = var.git_pat
   git_project      = var.git_project
-  cloud_project    = var.cloud_project
+  cloud_project    = var.cloud_project 
   instance_count   = var.instance_count
   region           = var.region
 }
