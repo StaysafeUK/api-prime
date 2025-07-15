@@ -161,6 +161,14 @@ resource "google_compute_instance" "vm" {
     GUNICORN_APP_MODULE=$(echo "$WSGI_FILE" | sed 's|^./||' | sed 's|/|.|g' | sed 's|\.py$||')
     echo "Gunicorn app module: $GUNICORN_APP_MODULE:application"
     python3 manage.py migrate
+
+    echo "--- Disabling UFW Firewall for Debugging ---"
+    if command -v ufw &> /dev/null; then
+        ufw --force disable
+    else
+        echo "ufw command not found, skipping firewall disable."
+    fi
+
     gunicorn "$GUNICORN_APP_MODULE:application" --bind 0.0.0.0:8000 --daemon
 
     # 8. Verify Processes.
