@@ -215,7 +215,7 @@ resource "google_compute_health_check" "http_health_check" {
   unhealthy_threshold = 2
 
   http_health_check {
-    port         = 8000
+    use_serving_port = true
     request_path = "/api/health/"
   }
 }
