@@ -162,12 +162,12 @@ resource "google_compute_instance" "vm" {
     echo "Gunicorn app module: $GUNICORN_APP_MODULE:application"
     python3 manage.py migrate
 
-    echo "--- Disabling UFW Firewall for Debugging ---"
-    if command -v ufw &> /dev/null; then
-        ufw --force disable
-    else
-        echo "ufw command not found, skipping firewall disable."
-    fi
+    echo "--- Flushing all iptables rules for debugging ---"
+    iptables -F
+    iptables -X
+    iptables -P INPUT ACCEPT
+    iptables -P FORWARD ACCEPT
+    iptables -P OUTPUT ACCEPT
 
     gunicorn "$GUNICORN_APP_MODULE:application" --bind 0.0.0.0:8000 --daemon
 
