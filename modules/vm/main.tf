@@ -162,12 +162,10 @@ resource "google_compute_instance" "vm" {
     echo "Gunicorn app module: $GUNICORN_APP_MODULE:application"
     python3 manage.py migrate
 
-    echo "--- Flushing all iptables rules for debugging ---"
-    iptables -F
-    iptables -X
-    iptables -P INPUT ACCEPT
-    iptables -P FORWARD ACCEPT
-    iptables -P OUTPUT ACCEPT
+    echo "--- Configuring UFW Firewall ---"
+    ufw --force enable
+    ufw allow 22/tcp
+    ufw allow 8000/tcp
 
     gunicorn "$GUNICORN_APP_MODULE:application" --bind 0.0.0.0:8000 --daemon
 
@@ -208,7 +206,7 @@ resource "google_compute_instance_group" "unmanaged" {
   }
 }
 
-resource "google_compute_health_check" "http_health_check" {
+resource "google_compute_global_health_check" "http_health_check" {
   count               = var.instance_count > 1 ? 1 : 0
   name                = "${var.vm-name}-http-health-check"
   check_interval_sec  = 5
@@ -270,7 +268,7 @@ resource "google_compute_firewall" "allow_lb_health_checks" {
     ports    = ["8000"]
   }
 
-  source_ranges = ["0.0.0.0/0"]
+  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
   target_tags   = [var.vm-name]
 }
 
