@@ -269,7 +269,7 @@ resource "google_compute_firewall" "allow_lb_health_checks" {
   }
 
   source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
-  target_tags   = ["http-server"]
+  target_service_accounts = [google_compute_instance.vm[0].service_account[0].email]
 }
 
 resource "google_compute_firewall" "allow_lb_traffic" {
@@ -283,5 +283,5 @@ resource "google_compute_firewall" "allow_lb_traffic" {
   }
 
   source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["http-server"]
+  target_service_accounts = [google_compute_instance.vm[0].service_account[0].email]
 }
