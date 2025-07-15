@@ -193,6 +193,11 @@ resource "google_compute_instance_group" "unmanaged" {
   zone  = "europe-west1-b"
 
   instances = google_compute_instance.vm[*].self_link
+
+  named_port {
+    name = "http"
+    port = "8000"
+  }
 }
 
 resource "google_compute_health_check" "http_health_check" {

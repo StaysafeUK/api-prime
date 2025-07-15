@@ -152,9 +152,18 @@ class AllInOneView(APIView):
         except ValueError:
             return Response({"error": "Invalid input. Please provide a valid integer."}, status=status.HTTP_400_BAD_REQUEST)
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class HealthCheckView(APIView):
     """
     A simple view for the load balancer health check.
     """
     def get(self, request):
-        return Response(status=status.HTTP_200_OK)
+        try:
+            logger.info("Health check endpoint called successfully.")
+            return Response(status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Health check failed: {e}")
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
