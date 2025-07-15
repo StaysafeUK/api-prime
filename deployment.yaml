@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: divisible-api-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: divisible-api
+  template:
+    metadata:
+      labels:
+        app: divisible-api
+    spec:
+      containers:
+      - name: divisible-api
+        image: gcr.io/your-project-id/divisible-api:latest
+        ports:
+        - containerPort: 8000
+        command:
+          - "gunicorn"
+          - "--bind"
+          - "0.0.0.0:8000"
+          - "divisible_api.wsgi:application"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: divisible-api-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: divisible-api
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8000
