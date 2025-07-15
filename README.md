@@ -39,6 +39,13 @@ To get the prime factors of the number 12, you would make a GET request to the f
 
 `http://<EXTERNAL_IP>/12`
 
+## External LB 
+
+To find the external IP address of the Load blancer when two or more hosts are used use the following cloud command
+`gcloud compute forwarding-rules describe api-prime-forwarding-rule \--global \`                                                                                  
+`--project=GCP_PROJECT \`
+`--format="value(IPAddress)"`
+
 The API would return the following JSON response:
 
 ```json
