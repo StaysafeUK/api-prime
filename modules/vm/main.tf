@@ -119,21 +119,9 @@ resource "google_compute_instance" "vm" {
     EXTERNAL_IP=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)
     echo "External IP: $EXTERNAL_IP"
 
-    # Get the current list of IPs from Secret Manager
-    ALLOWED_HOSTS_JSON=$(gcloud secrets versions access latest --secret="allowed-hosts-ips" --project="${var.cloud_project}")
-
-    ALLOWED_HOSTS_JSON=$(echo "$ALLOWED_HOSTS_JSON" | jq --arg ip "$EXTERNAL_IP" '[.[] | select(. != null)] + [$ip, "localhost", "127.0.0.1"] | unique')
-
-    # Convert the JSON array to a Python list string
-    ALLOWED_HOSTS_PYTHON_LIST=$(echo "$ALLOWED_HOSTS_JSON" | jq -c '.')
-
-    # Update the secret with the new list of IPs
-    echo "$ALLOWED_HOSTS_JSON" > /tmp/allowed-hosts-ips.json
-    gcloud secrets versions add allowed-hosts-ips --data-file=/tmp/allowed-hosts-ips.json --project="${var.cloud_project}"
-
     # Update the settings.py file
     echo "Attempting to modify ALLOWED_HOSTS in $SETTINGS_FILE..."
-    sed -i "s/^ALLOWED_HOSTS = .*/ALLOWED_HOSTS = $ALLOWED_HOSTS_PYTHON_LIST/" "$SETTINGS_FILE"
+    sed -i "s/^ALLOWED_HOSTS = .*/ALLOWED_HOSTS = ['*']/" "$SETTINGS_FILE"
     if [ $? -eq 0 ]; then
         echo "Successfully modified ALLOWED_HOSTS."
         echo "--- Contents of settings.py after modification ---"
