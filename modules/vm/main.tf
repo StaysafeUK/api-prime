@@ -262,7 +262,7 @@ resource "google_compute_firewall" "allow_lb_health_checks" {
     ports    = ["8000"]
   }
 
-  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
+  source_ranges = ["0.0.0.0/0"]
   target_tags   = [var.vm-name]
 }
 
