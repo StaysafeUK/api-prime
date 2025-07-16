@@ -246,6 +246,36 @@ resource "google_compute_global_forwarding_rule" "forwarding_rule" {
   load_balancing_scheme = "EXTERNAL_MANAGED"
 }
 
+resource "google_compute_managed_ssl_certificate" "ssl_certificate" {
+  count    = var.instance_count > 1 ? 1 : 0
+  name     = "${var.vm-name}-ssl-certificate"
+  managed {
+    domains = [var.domain_name]
+  }
+}
+
+resource "google_compute_target_https_proxy" "https_proxy" {
+  count             = var.instance_count > 1 ? 1 : 0
+  name              = "${var.vm-name}-https-proxy"
+  url_map           = google_compute_url_map.url_map[0].self_link
+  ssl_certificates = [google_compute_managed_ssl_certificate.ssl_certificate[0].self_link]
+}
+
+resource "google_compute_global_forwarding_rule" "forwarding_rule_https" {
+  count                 = var.instance_count > 1 ? 1 : 0
+  name                  = "${var.vm-name}-forwarding-rule-https"
+  target                = google_compute_target_https_proxy.https_proxy[0].self_link
+  ip_address            = google_compute_global_address.lb_ip[0].address
+  port_range            = "443"
+  load_balancing_scheme = "EXTERNAL_MANAGED"
+}
+
+variable "domain_name" {
+  description = "The domain name for the SSL certificate."
+  type        = string
+  default     = "api-prime.example.com"
+}
+
 resource "google_compute_firewall" "allow_lb_health_checks" {
   count   = var.instance_count > 1 ? 1 : 0
   name    = "${var.vm-name}-allow-lb-health-checks"

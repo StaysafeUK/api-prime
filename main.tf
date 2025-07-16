@@ -56,6 +56,12 @@ variable "region" {
   default     = "europe-west1"
 }
 
+variable "domain_name" {
+  description = "The domain name for the SSL certificate."
+  type        = string
+  default     = "api-prime.example.com"
+}
+
 module "vm" {
   source           = "./modules/vm"
   vm-name          = "api-frontend"
@@ -65,6 +71,7 @@ module "vm" {
   cloud_project    = var.cloud_project 
   instance_count   = var.instance_count
   region           = var.region
+  domain_name      = var.domain_name
 }
 
 resource "local_file" "IPs" {
