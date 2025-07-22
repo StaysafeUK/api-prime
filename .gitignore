@@ -18,3 +18,4 @@ credentials.json
 primenum3.py
 venv/
 *.venv
+inventory.csv

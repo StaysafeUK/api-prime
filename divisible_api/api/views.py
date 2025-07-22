@@ -20,7 +20,9 @@ class DivisibleView(APIView):
         try:
             number = int(number)
             if number <= 0:
-                return Response({"error": "Number must be a positive integer."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Please enter a positive number to find its divisors."}, status=status.HTTP_400_BAD_REQUEST)
+            if number > 99999999999999999:
+                return Response({"error": "The number you entered is very large. Please try a smaller number."}, status=status.HTTP_400_BAD_REQUEST)
             
             factors = find_divisors(number)
             return Response({"factors": factors})
@@ -35,7 +37,9 @@ class PrimeListView(APIView):
         try:
             number = int(number)
             if number <= 0:
-                return Response({"error": "Number must be a positive integer."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Please enter a positive number to get that many primes."}, status=status.HTTP_400_BAD_REQUEST)
+            if number > 260000:
+                return Response({"error": "You requested a very long list of prime numbers. Please try a smaller number."}, status=status.HTTP_400_BAD_REQUEST)
             
             primes = []
             num = 2
@@ -60,7 +64,7 @@ class NextPrimeView(APIView):
         try:
             number = int(number)
             if number < 0:
-                return Response({"error": "Number must be a non-negative integer."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Please enter a non-negative number to find the next prime."}, status=status.HTTP_400_BAD_REQUEST)
             
             num = number + 1
             while True:
@@ -83,7 +87,7 @@ class PreviousPrimeView(APIView):
         try:
             number = int(number)
             if number <= 2:
-                return Response({"error": "No prime number less than the given number."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "There are no prime numbers smaller than the one you entered. Please try a larger number." }, status=status.HTTP_400_BAD_REQUEST)
             
             num = number - 1
             while True:
@@ -106,7 +110,9 @@ class AllInOneView(APIView):
         try:
             number = int(number)
             if number <= 0:
-                return Response({"error": "Number must be a positive integer."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Please enter a positive number."}, status=status.HTTP_400_BAD_REQUEST)
+            if number > 260000:
+                return Response({"error": "The number you entered is very large. Please try a smaller number."}, status=status.HTTP_400_BAD_REQUEST)
 
             # Divisible
             factors = find_divisors(number)
