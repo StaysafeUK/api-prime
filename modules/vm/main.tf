@@ -39,6 +39,12 @@ variable "region" {
   default     = "europe-west1"
 }
 
+variable "vm_tags" {
+  description = "A list of tags to apply to the VM instances."
+  type        = list(string)
+  default     = []
+}
+
 
 
 resource "google_compute_instance" "vm" {
@@ -46,7 +52,7 @@ resource "google_compute_instance" "vm" {
   name         = "${var.vm-name}-${count.index}"
   machine_type = "n1-standard-2"
   zone         = "europe-west1-b"
-  tags         = [var.vm-name, "http-server"]
+  tags         = concat([var.vm-name, "http-server", "django-api"], var.vm_tags)
 
   lifecycle {
     ignore_changes = [
