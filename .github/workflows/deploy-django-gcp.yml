@@ -39,19 +39,28 @@ jobs:
             echo "No VMs found with the 'django-api' tag."
             exit 1
           fi
-          echo "GCP_INSTANCES=${INSTANCES//$'
-'/ }" >> $GITHUB_ENV
-          echo "Found VMs: $INSTANCES"
+          echo "Found VMs:"
+          echo "$INSTANCES"
+          echo "instances<<EOF" >> $GITHUB_OUTPUT
+          echo "$INSTANCES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Deploy to each VM
+        env:
+          INSTANCES: ${{ steps.get_vms.outputs.instances }}
+          VM_USERNAME: ${{ secrets.GCP_VM_USERNAME }}
         run: |
-          VM_USERNAME="${{ secrets.GCP_VM_USERNAME }}"
           GUNICORN_SERVICE_NAME="gunicorn"
           REPO_DIR="/home/${VM_USERNAME}/api-prime"
 
-          IFS=' ' read -r -a INSTANCE_ARRAY <<< "$GCP_INSTANCES"
+          echo "--- Instances to deploy to ---"
+          echo "${INSTANCES}"
+          echo "------------------------------"
 
-          for INSTANCE_PAIR in "${INSTANCE_ARRAY[@]}"; do
+          while read -r INSTANCE_PAIR; do
+            if [ -z "$INSTANCE_PAIR" ]; then
+              continue
+            fi
             INSTANCE_NAME=$(echo "$INSTANCE_PAIR" | cut -d',' -f1)
             INSTANCE_ZONE=$(echo "$INSTANCE_PAIR" | cut -d',' -f2)
 
@@ -72,4 +81,4 @@ jobs:
               echo "Deployment failed on VM: $INSTANCE_NAME ($INSTANCE_ZONE)."
               exit 1
             fi
-          done   
+          done <<< "${INSTANCES}"
