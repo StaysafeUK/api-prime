@@ -46,9 +46,9 @@ jobs:
       - name: Deploy to each VM
         env:
           VM_USERNAME: ${{ secrets.GCP_VM_USERNAME }}
-          REPO_DIR: /home/${{ secrets.GCP_VM_USERNAME }}/api-prime
           GUNICORN_SERVICE_NAME: gunicorn
         run: |
+          REPO_DIR=/home/${VM_USERNAME}/api-prime
           IFS=' ' read -r -a INSTANCE_ARRAY <<< "$GCP_INSTANCES"
 
           for INSTANCE_PAIR in "${INSTANCE_ARRAY[@]}"; do
