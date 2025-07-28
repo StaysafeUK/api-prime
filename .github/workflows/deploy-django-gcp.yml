@@ -44,11 +44,11 @@ jobs:
           echo "Found VMs: $INSTANCES"
 
       - name: Deploy to each VM
-        env:
-          VM_USERNAME: ${{ secrets.GCP_VM_USERNAME }}
-          GUNICORN_SERVICE_NAME: gunicorn
         run: |
-          REPO_DIR=/home/${VM_USERNAME}/api-prime
+          VM_USERNAME="${{ secrets.GCP_VM_USERNAME }}"
+          GUNICORN_SERVICE_NAME="gunicorn"
+          REPO_DIR="/home/${VM_USERNAME}/api-prime"
+
           IFS=' ' read -r -a INSTANCE_ARRAY <<< "$GCP_INSTANCES"
 
           for INSTANCE_PAIR in "${INSTANCE_ARRAY[@]}"; do
@@ -62,10 +62,10 @@ jobs:
               --command="
                 set -e
                 echo 'Pulling latest changes...'
-                cd ${{ env.REPO_DIR }}
+                cd $REPO_DIR
                 git pull origin main
                 echo 'Restarting Gunicorn service...'
-                sudo systemctl restart ${{ env.GUNICORN_SERVICE_NAME }}
+                sudo systemctl restart $GUNICORN_SERVICE_NAME
                 echo 'Deployment to $INSTANCE_NAME successful.'
               "
             if [ $? -ne 0 ]; then
