@@ -175,6 +175,7 @@ class HealthCheckView(APIView):
     """
     A simple view for the load balancer health check.
     This is a test comment to trigger the workflow.
+    This is another test comment.
     """
     def get(self, request):
         try:
