@@ -85,10 +85,10 @@ jobs:
                 git reset --hard origin/main
                 git pull origin main
                 echo 'Restarting Gunicorn...'
-                pkill gunicorn || true # Kill any existing Gunicorn processes, ignore if none exist
+                sudo pkill gunicorn || true # Kill any existing Gunicorn processes, ignore if none exist
                 WSGI_FILE=$(find ${REPO_DIR} -name "wsgi.py")
                 GUNICORN_APP_MODULE=$(echo "$WSGI_FILE" | sed 's|^./||' | sed 's|/|.|g' | sed 's|\.py$||')
-                gunicorn "$GUNICORN_APP_MODULE:application" --bind 0.0.0.0:8000 --daemon
+                ${REPO_DIR}/venv/bin/gunicorn "$GUNICORN_APP_MODULE:application" --bind 0.0.0.0:8000 --daemon
                 echo 'Deployment to $INSTANCE_NAME successful.'
               "
             if [ $? -ne 0 ]; then
