@@ -22,6 +22,8 @@ jobs:
       # Authenticates with Google Cloud using the service account key directly.
       # The previous step to create a temporary key file is no longer needed
       # as the 'credentials_json' input can directly accept the key content.
+      # Authenticates with Google Cloud using Workload Identity Federation.
+      # This is more secure than using a service account key.
       - name: Google Auth
         id: auth
         uses: google-github-actions/auth@v2
