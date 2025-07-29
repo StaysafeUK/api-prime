@@ -78,6 +78,8 @@ jobs:
                 set -e
                 echo 'Configuring Git safe directory...'
                 git config --global --add safe.directory /srv/api-prime
+                echo 'Changing repository ownership...'
+                sudo chown -R ${VM_USERNAME}:${VM_USERNAME} ${REPO_DIR}
                 echo 'Pulling latest changes...'
                 cd $REPO_DIR
                 git pull origin main
