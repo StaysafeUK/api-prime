@@ -174,6 +174,7 @@ logger = logging.getLogger(__name__)
 class HealthCheckView(APIView):
     """
     A simple view for the load balancer health check.
+    This is a test comment to trigger the workflow.
     """
     def get(self, request):
         try:
