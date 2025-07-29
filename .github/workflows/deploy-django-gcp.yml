@@ -30,6 +30,7 @@ jobs:
         with:
           workload_identity_provider: 'projects/754166336149/locations/global/workloadIdentityPools/github-actions-pool-new/providers/github-provider-new'
           service_account: 'githubact-prime-api@archejreterra.iam.gserviceaccount.com'
+          audience: 'archejreterra'
 
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
