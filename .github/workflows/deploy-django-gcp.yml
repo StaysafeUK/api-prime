@@ -40,7 +40,7 @@ jobs:
       - name: Get VM Instance Names and Zones
         id: get_vms
         run: |
-          INSTANCES=$(gcloud compute instances list --filter="tags.items=django-api" --format="value(name,zone)")
+          INSTANCES=$(gcloud compute instances list --filter="labels.goog-terraform-provisioned=true" --format="value(name,zone)")
           if [ -z "$INSTANCES" ]; then
             echo "No VMs found with the 'django-api' tag."
             exit 1
