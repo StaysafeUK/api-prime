@@ -57,7 +57,7 @@ jobs:
           VM_USERNAME: githubact-prime-api
         run: |
           GUNICORN_SERVICE_NAME="gunicorn"
-          REPO_DIR="/home/${VM_USERNAME}/api-prime"
+          REPO_DIR="/srv/api-prime"
 
           echo "--- Instances to deploy to ---"
           echo "${INSTANCES}"
