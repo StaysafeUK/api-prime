@@ -1,0 +1,75 @@
+name: Deploy Django API to GCP VMs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'divisible_api/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Get VM Instance Names and Zones
+        id: get_vms
+        run: |
+          INSTANCES=$(gcloud compute instances list --filter="tags.items=django-api" --format="value(name,zone)")
+          if [ -z "$INSTANCES" ]; then
+            echo "No VMs found with the 'django-api' tag."
+            exit 1
+          fi
+          echo "GCP_INSTANCES=${INSTANCES//$'
+'/ }" >> $GITHUB_ENV
+          echo "Found VMs: $INSTANCES"
+
+      - name: Deploy to each VM
+        env:
+          VM_USERNAME: ${{ secrets.GCP_VM_USERNAME }}
+          REPO_DIR: /home/${{ secrets.GCP_VM_USERNAME }}/api-prime
+          GUNICORN_SERVICE_NAME: gunicorn
+        run: |
+          IFS=' ' read -r -a INSTANCE_ARRAY <<< "$GCP_INSTANCES"
+
+          for INSTANCE_PAIR in "${INSTANCE_ARRAY[@]}"; do
+            INSTANCE_NAME=$(echo "$INSTANCE_PAIR" | cut -d',' -f1)
+            INSTANCE_ZONE=$(echo "$INSTANCE_PAIR" | cut -d',' -f2)
+
+            echo "--- Deploying to $INSTANCE_NAME in $INSTANCE_ZONE ---"
+
+            gcloud compute ssh "${VM_USERNAME}@${INSTANCE_NAME}" \
+              --zone="${INSTANCE_ZONE}" \
+              --command="
+                set -e
+                echo 'Pulling latest changes...'
+                cd ${{ env.REPO_DIR }}
+                git pull origin main
+                echo 'Restarting Gunicorn service...'
+                sudo systemctl restart ${{ env.GUNICORN_SERVICE_NAME }}
+                echo 'Deployment to $INSTANCE_NAME successful.'
+              "
+            if [ $? -ne 0 ]; then
+              echo "Deployment failed on VM: $INSTANCE_NAME ($INSTANCE_ZONE)."
+              exit 1
+            fi
+          done

@@ -5,7 +5,6 @@ env.py
 __pycache__/
 *.py[cod]
 node_modules/
-.github/
 scripts/
 cloudinary_python.txt
 credentials.json
@@ -18,5 +17,5 @@ credentials.json
 *.tfignore
 primenum3.py
 venv/
-*.venv
+*.venv29
 inventory.csv
