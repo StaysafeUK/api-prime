@@ -82,6 +82,7 @@ jobs:
                 sudo chown -R ${VM_USERNAME}:${VM_USERNAME} ${REPO_DIR}
                 echo 'Pulling latest changes...'
                 cd $REPO_DIR
+                git reset --hard origin/main
                 git pull origin main
                 echo 'Restarting Gunicorn service...'
                 sudo systemctl restart $GUNICORN_SERVICE_NAME
