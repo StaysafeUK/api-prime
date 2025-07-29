@@ -67,8 +67,8 @@ jobs:
             if [ -z "$INSTANCE_PAIR" ]; then
               continue
             fi
-            INSTANCE_NAME=$(echo "$INSTANCE_PAIR" | cut -d',' -f1)
-            INSTANCE_ZONE=$(echo "$INSTANCE_PAIR" | cut -d',' -f2)
+            INSTANCE_NAME=$(echo "$INSTANCE_PAIR" | awk '{print $1}')
+            INSTANCE_ZONE=$(echo "$INSTANCE_PAIR" | awk '{print $2}')
 
             echo "--- Deploying to $INSTANCE_NAME in $INSTANCE_ZONE ---"
 
