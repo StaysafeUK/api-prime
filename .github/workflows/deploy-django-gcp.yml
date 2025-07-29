@@ -54,7 +54,7 @@ jobs:
       - name: Deploy to each VM
         env:
           INSTANCES: ${{ steps.get_vms.outputs.instances }}
-          VM_USERNAME: ${{ secrets.GCP_VM_USERNAME }}
+          VM_USERNAME: githubact-prime-api
         run: |
           GUNICORN_SERVICE_NAME="gunicorn"
           REPO_DIR="/home/${VM_USERNAME}/api-prime"
