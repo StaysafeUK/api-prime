@@ -188,6 +188,8 @@ class HealthCheckView(APIView):
     This is a twelfth test comment.
     This is a thirteenth test comment.
     This is a fourteenth test comment.
+    This is a fifteenth test comment.
+
     """
     def get(self, request):
         try:
