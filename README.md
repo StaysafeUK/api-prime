@@ -31,11 +31,11 @@ Once the infrastructure is deployed, the API will be available at the external I
 
 The API has a single endpoint:
 
-- `GET /api/divisible/<integer>`  : Returns the prime factors of the given integer. > 99999999999999999
-- `GET /api/list/<integer>`       : Returns a list of prime numbers. > 260000
+- `GET /api/divisible/<integer>`  : Returns the prime factors of the given integer. < 99999999999999999
+- `GET /api/list/<integer>`       : Returns a list of prime numbers. < 260000
 - `GET /api/prime_next/<integer>` : Returns the next prime number in the series.
 - `GET /api/prime_prev/<integer>` : Returns the previous prime number in the series.
-- `GET /api/all/<integer>`        : Returns the previous prime number in the series. > 260000
+- `GET /api/all/<integer>`        : Returns the previous prime number in the series. < 260000
 
 
 ## Example
