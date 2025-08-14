@@ -67,7 +67,7 @@ apt-get update
 apt-get install -y python3-pip git
 
 # Clone the repository
-git clone https://github.com/StaysafeUK/prime-number-api.git /srv/prime-number-api
+git clone --branch primeworker https://github.com/StaysafeUK/prime-number-api.git /srv/prime-number-api
 
 # Install Python dependencies for the worker
 pip3 install -r /srv/prime-number-api/modules/worker/requirements.txt
