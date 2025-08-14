@@ -226,6 +226,11 @@ resource "google_compute_backend_service" "backend_service" {
     group = google_compute_instance_group.unmanaged[0].self_link
   }
 
+  log_config {
+    enable      = true
+    sample_rate = 1.0
+  }
+
   lifecycle {
     create_before_destroy = true
   }
