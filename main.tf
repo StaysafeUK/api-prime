@@ -21,6 +21,14 @@ terraform {
   }
 }
 
+data "google_project" "project" {}
+
+resource "google_project_iam_member" "redis_permission" {
+  project = var.cloud_project
+  role    = "roles/redis.editor"
+  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+}
+
 variable "cloud_project" {
   description = "The GCP project ID."
   type        = string
@@ -62,16 +70,30 @@ variable "domain_name" {
   default     = "api-prime.example.com"
 }
 
+variable "celery_worker_count" {
+  description = "The number of Celery worker instances to create."
+  type        = number
+  default     = 1
+}
+
 module "vm" {
   source           = "./modules/vm"
   vm-name          = "api-frontend"
   git_user         = var.git_user
   git_pat          = var.git_pat
   git_project      = var.git_project
-  cloud_project    = var.cloud_project 
+  cloud_project    = var.cloud_project
   instance_count   = var.instance_count
   region           = var.region
   domain_name      = var.domain_name
+}
+
+module "worker" {
+  source              = "./modules/worker"
+  cloud_project       = var.cloud_project
+  region              = var.region
+  api_server_name     = "api-frontend-0"
+  celery_worker_count = var.celery_worker_count
 }
 
 resource "local_file" "IPs" {

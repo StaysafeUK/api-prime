@@ -2,6 +2,8 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from .tasks import check_prime_task, prime_list_task, all_in_one_task
+from celery.result import AsyncResult
 
 def find_divisors(n):
     """Finds all divisors of a number n."""
@@ -22,12 +24,25 @@ class DivisibleView(APIView):
             if number <= 0:
                 return Response({"error": "Please enter a positive number to find its divisors."}, status=status.HTTP_400_BAD_REQUEST)
             if number > 99999999999999999:
-                return Response({"error": "The number you entered is very large. Please try a smaller number."}, status=status.HTTP_400_BAD_REQUEST)
+                task = check_prime_task.delay(number)
+                return Response({"task_id": task.id})
             
             factors = find_divisors(number)
             return Response({"factors": factors})
         except ValueError:
             return Response({"error": "Invalid input. Please provide a valid integer."}, status=status.HTTP_400_BAD_REQUEST)
+
+class TaskStatusView(APIView):
+    """
+    API view to check the status of a Celery task.
+    """
+    def get(self, request, task_id):
+        task_result = AsyncResult(task_id)
+        if task_result.ready():
+            return Response({"status": "completed", "result": task_result.result})
+        else:
+            return Response({"status": "pending"})
+
 
 class PrimeListView(APIView):
     """
@@ -39,7 +54,8 @@ class PrimeListView(APIView):
             if number <= 0:
                 return Response({"error": "Please enter a positive number to get that many primes."}, status=status.HTTP_400_BAD_REQUEST)
             if number > 260000:
-                return Response({"error": "You requested a very long list of prime numbers. Please try a smaller number."}, status=status.HTTP_400_BAD_REQUEST)
+                task = prime_list_task.delay(number)
+                return Response({"task_id": task.id})
             
             primes = []
             num = 2
@@ -112,7 +128,8 @@ class AllInOneView(APIView):
             if number <= 0:
                 return Response({"error": "Please enter a positive number."}, status=status.HTTP_400_BAD_REQUEST)
             if number > 260000:
-                return Response({"error": "The number you entered is very large. Please try a smaller number."}, status=status.HTTP_400_BAD_REQUEST)
+                task = all_in_one_task.delay(number)
+                return Response({"task_id": task.id})
 
             # Divisible
             factors = find_divisors(number)

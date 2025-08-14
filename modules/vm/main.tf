@@ -99,7 +99,7 @@ resource "google_compute_instance" "vm" {
 
     # 3. Clone Repository.
     echo "Cloning private repository..."
-    git clone "https://$GIT_USER:$GIT_PAT@github.com/StaysafeUK/${var.git_project}.git" /srv/api-prime
+    git clone --branch primeworker "https://$GIT_USER:$GIT_PAT@github.com/StaysafeUK/${var.git_project}.git" /srv/api-prime
     if [ $? -ne 0 ]; then
         echo "ERROR: Failed to clone repository. Please check your Git credentials (Personal Access Token) and repository permissions."
         exit 1

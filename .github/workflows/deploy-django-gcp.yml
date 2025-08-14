@@ -3,7 +3,7 @@ name: Deploy Django API to GCP VMs
 on:
   push:
     branches:
-      - main
+      - primeworker
     paths:
       - 'divisible_api/**'
 
@@ -82,8 +82,8 @@ jobs:
                 sudo chown -R ${VM_USERNAME}:${VM_USERNAME} ${REPO_DIR}
                 echo 'Pulling latest changes...'
                 cd $REPO_DIR
-                git reset --hard origin/main
-                git pull origin main
+                git reset --hard origin/primeworker
+                git pull origin primeworker
                 echo 'Restarting Gunicorn...'
                 sudo pkill gunicorn || true # Kill any existing Gunicorn processes, ignore if none exist
                 WSGI_FILE=$(find ${REPO_DIR} -name "wsgi.py")
