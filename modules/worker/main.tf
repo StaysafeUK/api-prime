@@ -59,6 +59,9 @@ resource "google_compute_instance" "celery_worker" {
   #!/bin/bash
 set -ex
 
+# Log all output to a file
+exec &> /var/log/startup-celery.log
+
 # Install dependencies
 apt-get update
 apt-get install -y python3-pip git
