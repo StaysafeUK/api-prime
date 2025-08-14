@@ -4,7 +4,7 @@ provider "google" {
 }
 
 data "google_compute_instance" "api_server" {
-  name    = "api-prime-0"
+  name    = var.api_server_name
   zone    = "europe-west1-b"
   project = var.cloud_project
 }
@@ -75,9 +75,9 @@ REDIS_HOST=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/c
 # Update the Celery configuration in Django settings
 sed -i "s/<REDIS_IP_ADDRESS>/$REDIS_HOST/" /srv/prime-number-api/divisible_api/settings.py
 
-# Start Celery worker
+# Start Celery worker in the background
 cd /srv/prime-number-api/divisible_api
-celery -A divisible_api worker --loglevel=info
+nohup celery -A divisible_api worker --loglevel=info &
 EOF
 
 }
