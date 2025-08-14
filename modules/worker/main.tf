@@ -72,11 +72,8 @@ git clone https://github.com/StaysafeUK/prime-number-api.git /srv/prime-number-a
 # Install Python dependencies for the worker
 pip3 install -r /srv/prime-number-api/modules/worker/requirements.txt
 
-# Get the Redis host IP address from metadata
-REDIS_HOST=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/redis-host)
-
-# Update the Celery configuration in Django settings
-sed -i "s/<REDIS_IP_ADDRESS>/$REDIS_HOST/" /srv/prime-number-api/divisible_api/settings.py
+# Get the Redis host IP address from metadata and set it as an environment variable
+export REDIS_HOST=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/redis-host)
 
 # Start Celery worker in the background
 cd /srv/prime-number-api/divisible_api
