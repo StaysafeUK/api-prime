@@ -45,13 +45,13 @@ apt-get install -y python3-pip git
 # Clone the repository
 git clone https://github.com/StaysafeUK/prime-number-api.git /srv/prime-number-api
 
-# Install Python dependencies
-pip3 install -r /srv/prime-number-api/requirements.txt
+# Install Python dependencies for the worker
+pip3 install -r /srv/prime-number-api/modules/worker/requirements.txt
 
 # Get the API server IP address from metadata
 API_SERVER_IP=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/api-server-ip)
 
-# Update the Celery configuration
+# Update the Celery configuration in Django settings
 sed -i "s/<REDIS_IP_ADDRESS>/$API_SERVER_IP/" /srv/prime-number-api/divisible_api/settings.py
 
 # Start Celery worker
