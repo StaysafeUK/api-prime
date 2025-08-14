@@ -12,15 +12,16 @@ This API provides a simple way to find the prime factors of a given integer, lis
 
 To use the API, you need to deploy the infrastructure using Terraform. The following variables are required:
 
-- `git_user`        : Your GitHub username.
-- `git_pat`         : Your GitHub Personal Access Token.
-- `git_project`.    : Your Github project
-- `cloud_project`   : Your Cloud Project GCP
-- `instance_count`  : Number of instances to apply
-- `domain_name`     : Domain name for HTTPS LB
-- `Terraform`       : Terraform command to build and deploy
+- `git_user`            : Your GitHub username.
+- `git_pat`             : Your GitHub Personal Access Token.
+- `git_project`.        : Your Github project
+- `cloud_project`       : Your Cloud Project GCP
+- `instance_count`      : Number of instances to apply
+- `domain_name`         : Domain name for HTTPS LB
+- `Terraform`           : Terraform command to build and deploy
+- `celary_worker_count` : Celery worker count 
 ```trf 
-terraform apply -var="instance_count=2" -var="git_user=USERNAME" -var="git_pat=1MT2JJI086bp64cYVqEXAMPLETOKENI4BQvqEwfJrmdmqu7phjqovUy8OP423YCST8jYrQOIj" -var="git_project=GIT_PROJECT" -var="cloud_project=CLOUD PROJECT_GCP" -var="domain_name=api.yourdomain.co.uk" 
+terraform apply -var="instance_count=2" -var="celery_worker_count=2" -var="git_user=USERNAME" -var="git_pat=1MT2JJI086bp64cYVqEXAMPLETOKENI4BQvqEwfJrmdmqu7phjqovUy8OP423YCST8jYrQOIj" -var="git_project=GIT_PROJECT" -var="cloud_project=CLOUD PROJECT_GCP" -var="domain_name=api.yourdomain.co.uk" 
 ```
 
 Confirm that you have a token from GCP before continuing go to https://jrevansprofile.verifyus.co.uk/contact for details on how you can get a token.
