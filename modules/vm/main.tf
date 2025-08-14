@@ -219,6 +219,7 @@ resource "google_compute_backend_service" "backend_service" {
   name                  = "${var.vm-name}-backend-service"
   protocol              = "HTTP"
   port_name             = "http"
+  timeout_sec           = 12600
   load_balancing_scheme = "EXTERNAL_MANAGED"
   health_checks         = [google_compute_health_check.http_health_check[0].self_link]
 
