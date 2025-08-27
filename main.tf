@@ -1,5 +1,5 @@
 provider "google" {
-  credentials = file("credentials.json")
+  # credentials = file("credentials.json")
   project     = "${var.cloud_project}"
   region      = "europe-west1"
   zone        = "europe-west1-b"
@@ -21,12 +21,16 @@ terraform {
   }
 }
 
-data "google_project" "project" {}
-
 resource "google_project_iam_member" "redis_permission" {
   project = var.cloud_project
   role    = "roles/redis.editor"
-  member  = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+  member  = "serviceAccount:754166336149-compute@developer.gserviceaccount.com"
+}
+
+resource "google_project_service" "redis_api" {
+  project            = var.cloud_project
+  service            = "redis.googleapis.com"
+  disable_on_destroy = false
 }
 
 variable "cloud_project" {
@@ -92,8 +96,14 @@ module "worker" {
   source              = "./modules/worker"
   cloud_project       = var.cloud_project
   region              = var.region
-  api_server_name     = "api-frontend-0"
+  api_server_ip       = module.vm.ip[0]
   celery_worker_count = var.celery_worker_count
+
+  providers = {
+    google = google
+  }
+
+  depends_on = [google_project_service.redis_api]
 }
 
 resource "local_file" "IPs" {

@@ -1,18 +1,19 @@
-provider "google" {
-  project = var.cloud_project
-  region  = var.region
-}
 
-data "google_compute_instance" "api_server" {
-  name    = var.api_server_name
-  zone    = "europe-west1-b"
-  project = var.cloud_project
+
+
+
+terraform {
+  required_providers {
+    google = {
+      source = "hashicorp/google"
+    }
+  }
 }
 
 resource "google_redis_instance" "broker" {
   name           = var.redis_name
   tier           = var.redis_tier
-  memory_size_gb = 1
+  memory_size_gb = 1.0
   region         = var.region
   redis_version  = "REDIS_5_0"
 
@@ -51,7 +52,7 @@ resource "google_compute_instance" "celery_worker" {
   }
 
   metadata = {
-    api-server-ip = data.google_compute_instance.api_server.network_interface[0].network_ip
+    api-server-ip = var.api_server_ip
     redis-host    = google_redis_instance.broker.host
   }
 
