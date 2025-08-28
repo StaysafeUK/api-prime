@@ -19,13 +19,13 @@ class DivisibleView(APIView):
     API view to find the factors of a given number.
     """
     def get(self, request, number):
+        if len(number) > 17:
+            task = check_prime_task.delay(number)
+            return Response({"task_id": task.id})
         try:
             number = int(number)
             if number <= 0:
                 return Response({"error": "Please enter a positive number to find its divisors."}, status=status.HTTP_400_BAD_REQUEST)
-            if number > 99999999999999999:
-                task = check_prime_task.delay(number)
-                return Response({"task_id": task.id})
             
             factors = find_divisors(number)
             return Response({"factors": factors})
