@@ -148,7 +148,8 @@ resource "google_compute_instance" "vm" {
     
     # 7. Start Django App.
     echo "Starting Django app..."
-    PYTHONPATH=/srv/api-prime /srv/api-prime/venv/bin/python3 /srv/api-prime/divisible_api/manage.py migrate
+    cd /srv/api-prime/divisible_api
+    /srv/api-prime/venv/bin/python3 manage.py migrate
 
     echo "--- Configuring UFW Firewall ---"
     ufw --force enable
@@ -156,7 +157,7 @@ resource "google_compute_instance" "vm" {
     ufw allow 8000/tcp
 
     export REDIS_HOST=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/redis-host)
-    PYTHONPATH=/srv/api-prime /srv/api-prime/venv/bin/gunicorn divisible_api.divisible_api.wsgi:application --bind 0.0.0.0:8000 &
+    /srv/api-prime/venv/bin/gunicorn divisible_api.wsgi:application --bind 0.0.0.0:8000 &
 
     # 8. Verify Processes.
     echo "--- Verifying Gunicorn process ---"

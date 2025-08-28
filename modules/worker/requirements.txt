@@ -1,2 +1,4 @@
 celery==5.4.0
 redis==5.0.7
+django==5.0.6
+gunicorn==23.0.0

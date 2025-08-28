@@ -82,7 +82,8 @@ python3 -m venv /srv/prime-number-api/venv
 export REDIS_HOST=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/redis-host)
 
 # Start Celery worker in the background
-PYTHONPATH=/srv/prime-number-api /srv/prime-number-api/venv/bin/celery -A divisible_api.celery_app worker --loglevel=info &
+cd /srv/prime-number-api/divisible_api
+/srv/prime-number-api/venv/bin/celery -A divisible_api.celery_app worker --loglevel=info &
 EOF
 
 }
