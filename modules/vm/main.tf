@@ -45,6 +45,11 @@ variable "vm_tags" {
   default     = []
 }
 
+variable "redis_host" {
+  description = "The hostname or IP address of the Redis instance."
+  type        = string
+}
+
 
 
 resource "google_compute_instance" "vm" {
@@ -75,6 +80,10 @@ resource "google_compute_instance" "vm" {
 
   service_account {
     scopes = ["cloud-platform"]
+  }
+
+  metadata = {
+    redis-host = var.redis_host
   }
 
   metadata_startup_script = <<-EOF
@@ -140,16 +149,16 @@ resource "google_compute_instance" "vm" {
     
     # 7. Start Django App.
     echo "Starting Django app..."
-    MANAGE_PY_DIR=/srv/api-prime/divisible_api
-    cd "$MANAGE_PY_DIR"
-    python3 manage.py migrate
+    cd /srv/api-prime
+    python3 divisible_api/manage.py migrate
 
     echo "--- Configuring UFW Firewall ---"
     ufw --force enable
     ufw allow 22/tcp
     ufw allow 8000/tcp
 
-    gunicorn divisible_api.wsgi:application --bind 0.0.0.0:8000 &
+    export REDIS_HOST=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/redis-host)
+    gunicorn divisible_api.divisible_api.wsgi:application --bind 0.0.0.0:8000 &
 
     # 8. Verify Processes.
     echo "--- Verifying Gunicorn process ---"

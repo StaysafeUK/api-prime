@@ -90,6 +90,7 @@ module "vm" {
   instance_count   = var.instance_count
   region           = var.region
   domain_name      = var.domain_name
+  redis_host       = module.worker.redis_host
 }
 
 module "worker" {
