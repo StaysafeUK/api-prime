@@ -140,20 +140,8 @@ resource "google_compute_instance" "vm" {
     
     # 7. Start Django App.
     echo "Starting Django app..."
-    MANAGE_PY_DIR=$(dirname $(find /srv/api-prime -name manage.py | head -n 1))
-    if [ -z "$MANAGE_PY_DIR" ]; then
-        echo "ERROR: manage.py not found!"
-        exit 1
-    fi
-    echo "Found manage.py in $MANAGE_PY_DIR"
+    MANAGE_PY_DIR=/srv/api-prime/divisible_api
     cd "$MANAGE_PY_DIR"
-    WSGI_FILE=$(find . -name wsgi.py | head -n 1)
-    if [ -z "$WSGI_FILE" ]; then
-        echo "ERROR: wsgi.py not found!"
-        exit 1
-    fi
-    GUNICORN_APP_MODULE=$(echo "$WSGI_FILE" | sed 's|^./||' | sed 's|/|.|g' | sed 's|\.py$||')
-    echo "Gunicorn app module: $GUNICORN_APP_MODULE:application"
     python3 manage.py migrate
 
     echo "--- Configuring UFW Firewall ---"
@@ -161,10 +149,11 @@ resource "google_compute_instance" "vm" {
     ufw allow 22/tcp
     ufw allow 8000/tcp
 
-    gunicorn "$GUNICORN_APP_MODULE:application" --bind 0.0.0.0:8000 --daemon
+    gunicorn divisible_api.wsgi:application --bind 0.0.0.0:8000 &
 
     # 8. Verify Processes.
     echo "--- Verifying Gunicorn process ---"
+    sleep 5 # give gunicorn a moment to start
     ps aux | grep gunicorn
     echo "--- Verifying listening ports ---"
     netstat -tulpn | grep 8000
