@@ -67,13 +67,17 @@ exec &> /var/log/startup-celery.log
 
 # Install dependencies
 apt-get update
-apt-get install -y python3-pip git
+apt-get install -y python3-pip git python3-venv
 
 # Clone the repository
 git clone --branch primeworker https://github.com/StaysafeUK/prime-number-api.git /srv/prime-number-api
 
+# Setup Virtual Environment
+python3 -m venv /srv/prime-number-api/venv
+source /srv/prime-number-api/venv/bin/activate
+
 # Install Python dependencies for the worker
-pip3 install -r /srv/prime-number-api/requirements.txt
+pip install -r /srv/prime-number-api/requirements.txt
 
 # Get the Redis host IP address from metadata and set it as an environment variable
 export REDIS_HOST=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/redis-host)

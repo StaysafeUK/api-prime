@@ -117,11 +117,10 @@ resource "google_compute_instance" "vm" {
     # 4. Setup Virtual Environment.
     echo "Setting up Python virtual environment..."
     python3 -m venv /srv/api-prime/venv
-    source /srv/api-prime/venv/bin/activate
-
+    
     # 5. Install Python dependencies.
     echo "Installing Python dependencies..."
-    pip install -r /srv/api-prime/requirements.txt
+    /srv/api-prime/venv/bin/pip install -r /srv/api-prime/requirements.txt
 
     # 6. Configure Django Project.
     echo "Configuring Django..."
@@ -150,7 +149,7 @@ resource "google_compute_instance" "vm" {
     # 7. Start Django App.
     echo "Starting Django app..."
     cd /srv/api-prime
-    python3 divisible_api/manage.py migrate
+    /srv/api-prime/venv/bin/python3 divisible_api/manage.py migrate
 
     echo "--- Configuring UFW Firewall ---"
     ufw --force enable
@@ -158,7 +157,7 @@ resource "google_compute_instance" "vm" {
     ufw allow 8000/tcp
 
     export REDIS_HOST=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/redis-host)
-    gunicorn divisible_api.divisible_api.wsgi:application --bind 0.0.0.0:8000 &
+    /srv/api-prime/venv/bin/gunicorn divisible_api.divisible_api.wsgi:application --bind 0.0.0.0:8000 &
 
     # 8. Verify Processes.
     echo "--- Verifying Gunicorn process ---"
