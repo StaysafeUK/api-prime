@@ -148,8 +148,8 @@ resource "google_compute_instance" "vm" {
     
     # 7. Start Django App.
     echo "Starting Django app..."
-    cd /srv/api-prime
-    /srv/api-prime/venv/bin/python3 divisible_api/manage.py migrate
+    export PYTHONPATH=/srv/api-prime
+    /srv/api-prime/venv/bin/python3 /srv/api-prime/divisible_api/manage.py migrate
 
     echo "--- Configuring UFW Firewall ---"
     ufw --force enable

@@ -74,17 +74,16 @@ git clone --branch primeworker https://github.com/StaysafeUK/prime-number-api.gi
 
 # Setup Virtual Environment
 python3 -m venv /srv/prime-number-api/venv
-source /srv/prime-number-api/venv/bin/activate
 
 # Install Python dependencies for the worker
-pip install -r /srv/prime-number-api/requirements.txt
+/srv/prime-number-api/venv/bin/pip install -r /srv/prime-number-api/requirements.txt
 
 # Get the Redis host IP address from metadata and set it as an environment variable
 export REDIS_HOST=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/redis-host)
 
 # Start Celery worker in the background
-cd /srv/prime-number-api
-nohup celery -A divisible_api.celery_app worker --loglevel=info &
+export PYTHONPATH=/srv/prime-number-api
+/srv/prime-number-api/venv/bin/celery -A divisible_api.celery_app worker --loglevel=info &
 EOF
 
 }
