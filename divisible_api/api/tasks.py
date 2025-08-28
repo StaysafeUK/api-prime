@@ -2,6 +2,7 @@ from celery import shared_task
 
 def is_prime(n):
     """Checks if a number is prime."""
+    n = int(n)
     if n < 2:
         return False
     for i in range(2, int(n**0.5) + 1):
@@ -27,6 +28,7 @@ def prime_list_task(number):
 
 def find_divisors(n):
     """Finds all divisors of a number n."""
+    n = int(n)
     divisors = set()
     for i in range(1, int(n**0.5) + 1):
         if n % i == 0:
@@ -37,6 +39,7 @@ def find_divisors(n):
 @shared_task
 def all_in_one_task(number):
     """Celery task to get all the results from the other APIs."""
+    number = int(number)
     # Divisible
     factors = find_divisors(number)
 
