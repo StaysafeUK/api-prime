@@ -1,7 +1,3 @@
-
-
-
-
 terraform {
   required_providers {
     google = {
@@ -77,14 +73,14 @@ apt-get install -y python3-pip git
 git clone --branch primeworker https://github.com/StaysafeUK/prime-number-api.git /srv/prime-number-api
 
 # Install Python dependencies for the worker
-pip3 install -r /srv/prime-number-api/modules/worker/requirements.txt
+pip3 install -r /srv/prime-number-api/requirements.txt
 
 # Get the Redis host IP address from metadata and set it as an environment variable
 export REDIS_HOST=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/redis-host)
 
 # Start Celery worker in the background
-cd /srv/prime-number-api/divisible_api
-nohup celery -A divisible_api worker --loglevel=info &
+cd /srv/prime-number-api
+nohup celery -A divisible_api.celery_app worker --loglevel=info &
 EOF
 
 }
