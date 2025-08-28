@@ -37,6 +37,12 @@ resource "google_compute_instance" "celery_worker" {
   zone         = "europe-west1-b"
   tags         = concat([var.vm-name, "celery-worker"], var.vm_tags)
 
+  lifecycle {
+    ignore_changes = [
+      metadata["ssh-keys"],
+    ]
+  }
+
   boot_disk {
     initialize_params {
       image = "debian-cloud/debian-12"

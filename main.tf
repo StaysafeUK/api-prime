@@ -98,6 +98,8 @@ module "worker" {
   region              = var.region
   api_server_ip       = module.vm.ip[0]
   celery_worker_count = var.celery_worker_count
+  vm-name             = "api-frontend"
+  vm_tags             = ["api-frontend", "celery-worker"]
 
   providers = {
     google = google
