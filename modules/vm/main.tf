@@ -197,7 +197,7 @@ resource "google_compute_instance_group" "unmanaged" {
   }
 }
 
-resource "google_compute_health_.check" "http_health_check" {
+resource "google_compute_health_check" "http_health_check" {
   count               = var.instance_count > 1 ? 1 : 0
   name                = "${var.vm-name}-http-health-check"
   check_interval_sec  = 5
