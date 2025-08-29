@@ -70,10 +70,14 @@ exec &> /var/log/startup-celery.log
 
 # Install dependencies
 apt-get update
-apt-get install -y python3-pip git python3-venv
+apt-get install -y python3-pip git python3-venv google-cloud-sdk
+
+# Fetch Git Credentials
+GIT_USER=$(gcloud secrets versions access latest --secret="git-user" --project="archejreterra")
+GIT_PAT=$(gcloud secrets versions access latest --secret="git-pat" --project="archejreterra")
 
 # Clone the repository
-git clone --branch primeworker https://github.com/StaysafeUK/prime-number-api.git /srv/prime-number-api
+git clone --branch primeworker "https://$GIT_USER:$GIT_PAT@github.com/StaysafeUK/prime-number-api.git" /srv/prime-number-api
 
 # Setup Virtual Environment
 python3 -m venv /srv/prime-number-api/venv
