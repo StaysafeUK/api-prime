@@ -19,7 +19,7 @@ class DivisibleView(APIView):
     API view to find the factors of a given number.
     """
     def get(self, request, number):
-        if len(number) > 17:
+        if len(str(number)) > 17:
             task = check_prime_task.delay(number)
             return Response({"task_id": task.id})
         try:
@@ -49,7 +49,7 @@ class PrimeListView(APIView):
     API view to get a list of prime numbers.
     """
     def get(self, request, number):
-        if len(number) > 6: # Avoid overflow before int conversion
+        if len(str(number)) > 6: # Avoid overflow before int conversion
             task = prime_list_task.delay(number)
             return Response({"task_id": task.id})
         try:
@@ -80,7 +80,7 @@ class NextPrimeView(APIView):
     API view to get the next prime number.
     """
     def get(self, request, number):
-        if len(number) > 17:
+        if len(str(number)) > 17:
             task = next_prime_task.delay(number)
             return Response({"task_id": task.id})
         try:
@@ -106,7 +106,7 @@ class PreviousPrimeView(APIView):
     API view to get the previous prime number.
     """
     def get(self, request, number):
-        if len(number) > 17:
+        if len(str(number)) > 17:
             task = previous_prime_task.delay(number)
             return Response({"task_id": task.id})
         try:
@@ -132,7 +132,7 @@ class AllInOneView(APIView):
     API view to get all the results from the other APIs.
     """
     def get(self, request, number):
-        if len(number) > 6: # Avoid overflow before int conversion
+        if len(str(number)) > 6: # Avoid overflow before int conversion
             task = all_in_one_task.delay(number)
             return Response({"task_id": task.id})
         try:
