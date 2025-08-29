@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .tasks import check_prime_task, prime_list_task, all_in_one_task
+from .tasks import check_prime_task, prime_list_task, all_in_one_task, next_prime_task, previous_prime_task
 from celery.result import AsyncResult
 
 def find_divisors(n):
@@ -49,11 +49,14 @@ class PrimeListView(APIView):
     API view to get a list of prime numbers.
     """
     def get(self, request, number):
+        if len(number) > 6: # Avoid overflow before int conversion
+            task = prime_list_task.delay(number)
+            return Response({"task_id": task.id})
         try:
             number = int(number)
             if number <= 0:
                 return Response({"error": "Please enter a positive number to get that many primes."}, status=status.HTTP_400_BAD_REQUEST)
-            if number > 999999999999999:
+            if number > 20000: # Safe threshold for synchronous execution
                 task = prime_list_task.delay(number)
                 return Response({"task_id": task.id})
             
@@ -77,6 +80,9 @@ class NextPrimeView(APIView):
     API view to get the next prime number.
     """
     def get(self, request, number):
+        if len(number) > 17:
+            task = next_prime_task.delay(number)
+            return Response({"task_id": task.id})
         try:
             number = int(number)
             if number < 0:
@@ -100,6 +106,9 @@ class PreviousPrimeView(APIView):
     API view to get the previous prime number.
     """
     def get(self, request, number):
+        if len(number) > 17:
+            task = previous_prime_task.delay(number)
+            return Response({"task_id": task.id})
         try:
             number = int(number)
             if number <= 2:
@@ -123,11 +132,14 @@ class AllInOneView(APIView):
     API view to get all the results from the other APIs.
     """
     def get(self, request, number):
+        if len(number) > 6: # Avoid overflow before int conversion
+            task = all_in_one_task.delay(number)
+            return Response({"task_id": task.id})
         try:
             number = int(number)
             if number <= 0:
                 return Response({"error": "Please enter a positive number."}, status=status.HTTP_400_BAD_REQUEST)
-            if number > 999999999:
+            if number > 20000: # Safe threshold for synchronous execution
                 task = all_in_one_task.delay(number)
                 return Response({"task_id": task.id})
 
