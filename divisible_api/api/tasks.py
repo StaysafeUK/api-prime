@@ -37,6 +37,27 @@ def find_divisors(n):
     return sorted(list(divisors))
 
 @shared_task
+def next_prime_task(number):
+    """Celery task to find the next prime number."""
+    number = int(number)
+    num = number + 1
+    while True:
+        if is_prime(num):
+            return num
+        num += 1
+
+@shared_task
+def previous_prime_task(number):
+    """Celery task to find the previous prime number."""
+    number = int(number)
+    num = number - 1
+    while num > 1:
+        if is_prime(num):
+            return num
+        num -= 1
+    return None
+
+@shared_task
 def all_in_one_task(number):
     """Celery task to get all the results from the other APIs."""
     number = int(number)
@@ -47,22 +68,10 @@ def all_in_one_task(number):
     primes = prime_list_task(number)
 
     # Next Prime
-    next_prime_num = number + 1
-    while True:
-        if is_prime(next_prime_num):
-            next_prime = next_prime_num
-            break
-        next_prime_num += 1
+    next_prime = next_prime_task(number)
 
     # Previous Prime
-    previous_prime = None
-    if number > 2:
-        prev_prime_num = number - 1
-        while prev_prime_num > 1:
-            if is_prime(prev_prime_num):
-                previous_prime = prev_prime_num
-                break
-            prev_prime_num -= 1
+    previous_prime = previous_prime_task(number)
 
     return {
         "divisible": factors,
