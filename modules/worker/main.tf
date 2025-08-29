@@ -77,7 +77,7 @@ GIT_USER=$(gcloud secrets versions access latest --secret="git-user" --project="
 GIT_PAT=$(gcloud secrets versions access latest --secret="git-pat" --project="archejreterra")
 
 # Clone the repository
-git clone --branch primeworker "https://$GIT_USER:$GIT_PAT@github.com/StaysafeUK/prime-number-api.git" /srv/prime-number-api
+git clone --branch primeworker "https://$GIT_USER:$GIT_PAT@github.com/StaysafeUK/api-prime.git" /srv/prime-number-api
 
 # Setup Virtual Environment
 python3 -m venv /srv/prime-number-api/venv
