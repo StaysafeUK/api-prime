@@ -47,6 +47,9 @@ resource "google_compute_instance" "celery_worker" {
 
   network_interface {
     network = "default"
+    access_config {
+      // Ephemeral external IP
+    }
   }
 
   service_account {
