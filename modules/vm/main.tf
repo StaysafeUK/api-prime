@@ -157,7 +157,7 @@ resource "google_compute_instance" "vm" {
     ufw allow 8000/tcp
 
     export REDIS_HOST=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/redis-host)
-    /srv/api-prime/venv/bin/gunicorn divisible_api.wsgi:application --bind 0.0.0.0:8000 --access-logfile - --error-logfile - &
+    /srv/api-prime/venv/bin/gunicorn divisible_api.wsgi:application --bind 0.0.0.0:8000 --access-logfile /var/log/gunicorn_access.log --error-logfile /var/log/gunicorn_error.log &
 
     # 8. Verify Processes.
     echo "--- Verifying Gunicorn process ---"
