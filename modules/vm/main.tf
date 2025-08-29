@@ -285,20 +285,6 @@ variable "domain_name" {
   default     = "api-prime.example.com"
 }
 
-resource "google_compute_firewall" "allow_lb_health_checks" {
-  count   = var.instance_count > 1 ? 1 : 0
-  name    = "${var.vm-name}-allow-lb-health-checks"
-  network = "default"
-
-  allow {
-    protocol = "tcp"
-    ports    = ["8000"]
-  }
-
-  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
-  target_service_accounts = [for s in google_compute_instance.vm : s.service_account[0].email]
-}
-
 resource "google_compute_firewall" "allow_lb_traffic" {
   count   = var.instance_count > 1 ? 1 : 0
   name    = "${var.vm-name}-allow-lb-traffic"
@@ -309,6 +295,6 @@ resource "google_compute_firewall" "allow_lb_traffic" {
     ports    = ["8000"]
   }
 
-  source_ranges = ["0.0.0.0/0"]
-  target_service_accounts = [for s in google_compute_instance.vm : s.service_account[0].email]
+  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
+  target_tags   = ["http-server"]
 }
