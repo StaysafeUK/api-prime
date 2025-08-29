@@ -53,7 +53,7 @@ class PrimeListView(APIView):
             number = int(number)
             if number <= 0:
                 return Response({"error": "Please enter a positive number to get that many primes."}, status=status.HTTP_400_BAD_REQUEST)
-            if number > 260000:
+            if number > 999999999999999:
                 task = prime_list_task.delay(number)
                 return Response({"task_id": task.id})
             
@@ -127,7 +127,7 @@ class AllInOneView(APIView):
             number = int(number)
             if number <= 0:
                 return Response({"error": "Please enter a positive number."}, status=status.HTTP_400_BAD_REQUEST)
-            if number > 260000:
+            if number > 999999999:
                 task = all_in_one_task.delay(number)
                 return Response({"task_id": task.id})
 
