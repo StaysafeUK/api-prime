@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .tasks import check_prime_task, prime_list_task, all_in_one_task, next_prime_task, previous_prime_task
+from .tasks import find_divisors_task, prime_list_task, all_in_one_task, next_prime_task, previous_prime_task
 from celery.result import AsyncResult
 
 def find_divisors(n):
@@ -20,7 +20,7 @@ class DivisibleView(APIView):
     """
     def get(self, request, number):
         if len(str(number)) > 17:
-            task = check_prime_task.delay(number)
+            task = find_divisors_task.delay(number)
             return Response({"task_id": task.id})
         try:
             number = int(number)

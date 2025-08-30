@@ -11,6 +11,11 @@ def is_prime(n):
     return True
 
 @shared_task
+def find_divisors_task(number):
+    """Celery task to find all divisors of a number."""
+    return find_divisors(number)
+
+@shared_task
 def check_prime_task(number):
     """Celery task to check if a number is prime."""
     return is_prime(number)
