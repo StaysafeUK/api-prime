@@ -86,6 +86,6 @@ The API would return the following JSON response:
 `select for next prime`     : `http://<EXTERNAL_IP>:8000/api/prime_next/12/?format=json`
 `select for previous prime` : `http://<EXTERNAL_IP>:8000/api/prime_prev/12/?format=json`
 `select for All`            : `http://<EXTERNAL_IP>:8000/api/all/12/?format=json`
-`select for task_id`        : `http://<EXTERNAL_IP:8000/api/task_id/6a862855-37b0-4f07-a94a-d8c71168145d"/?format=json>`
+`select for task_status`    : `http://<EXTERNAL_IP:8000/api/task_status/6a862855-37b0-4f07-a94a-d8c71168145d"/?format=json>`
 
 for json format only.
