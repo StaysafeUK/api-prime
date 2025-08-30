@@ -63,7 +63,7 @@ The API would return the following JSON response:
   "result": null
 }
 
-Until result is given
+Refresh Until result is given
 ```
 
 ## External LB 
