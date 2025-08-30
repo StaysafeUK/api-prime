@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from .tasks import check_prime_task, prime_list_task, all_in_one_task, next_prime_task, previous_prime_task
 from celery.result import AsyncResult
-from divisible_api.celery_app import app as celery_app
 
 def find_divisors(n):
     """Finds all divisors of a number n."""
@@ -38,7 +37,7 @@ class TaskStatusView(APIView):
     API view to check the status of a Celery task.
     """
     def get(self, request, task_id):
-        task_result = AsyncResult(task_id, app=celery_app)
+        task_result = AsyncResult(task_id)
         if task_result.ready():
             return Response({"status": "completed", "result": task_result.result})
         else:
