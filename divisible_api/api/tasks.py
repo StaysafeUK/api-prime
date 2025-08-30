@@ -1,12 +1,37 @@
 from celery import shared_task
+import random
 
 def is_prime(n):
-    """Checks if a number is prime."""
+    """
+    Checks if a number is prime using the Miller-Rabin primality test.
+    This is a probabilistic test, but highly accurate for large numbers.
+    """
     n = int(n)
     if n < 2:
         return False
-    for i in range(2, int(n**0.5) + 1):
-        if n % i == 0:
+    if n == 2 or n == 3:
+        return True
+    if n % 2 == 0 or n % 3 == 0:
+        return False
+
+    d = n - 1
+    s = 0
+    while d % 2 == 0:
+        d //= 2
+        s += 1
+
+    # Run the test k times for better accuracy
+    k = 5 
+    for _ in range(k):
+        a = random.randrange(2, n - 1)
+        x = pow(a, d, n)
+        if x == 1 or x == n - 1:
+            continue
+        for _ in range(s - 1):
+            x = pow(x, 2, n)
+            if x == n - 1:
+                break
+        else:
             return False
     return True
 
@@ -32,7 +57,10 @@ def prime_list_task(number):
     return primes
 
 def find_divisors(n):
-    """Finds all divisors of a number n."""
+    """
+    Finds all divisors of a number n.
+    Note: This will be slow for very large numbers with large prime factors.
+    """
     n = int(n)
     divisors = set()
     for i in range(1, int(n**0.5) + 1):
