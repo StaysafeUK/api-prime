@@ -37,13 +37,34 @@ The API has a single endpoint:
 - `GET /api/prime_next/<integer>` : Returns the next prime number in the series.
 - `GET /api/prime_prev/<integer>` : Returns the previous prime number in the series.
 - `GET /api/all/<integer>`        : Returns the previous prime number in the series. > 260000
+- `GET /api/task_status/<TASK_ID>`: Use to get the status and result of a Celery driven task for > E17
 
 
-## Example
+## Example A
 
 To get the prime factors of the number 12, you would make a GET request to the following URL:
 
 `http://<EXTERNAL_IP>/12`
+
+## Example B 
+
+To get the prime factors of E 17+ this example E18 (999999999999999990), you would make a GET request to the following URL:
+
+`https://<api.domainname.co.uk/api>/divisible/999999999999999999/format=json` this will generate a Celery Task ID example 6a862855-37b0-4f07-a94a-d8c71168145d.
+
+You can then check the status, and result of the task by making a GET request to the following URL: `https://<api.domainname.co.uk/api/task_id/6a862855-37b0-4f07-a94a-d8c71168145d/?format=json`
+
+The API would return the following JSON response:
+
+```json
+{
+  "task_id": "6a862855-37b0-4f07-a94a-d8c71168145d",
+  "status": "PENDING",
+  "result": null
+}
+
+Until result is given
+```
 
 ## External LB 
 
@@ -65,5 +86,6 @@ The API would return the following JSON response:
 `select for next prime`     : `http://<EXTERNAL_IP>:8000/api/prime_next/12/?format=json`
 `select for previous prime` : `http://<EXTERNAL_IP>:8000/api/prime_prev/12/?format=json`
 `select for All`            : `http://<EXTERNAL_IP>:8000/api/all/12/?format=json`
+`select for task_id`        : `http://<EXTERNAL_IP:8000/api/task_id/6a862855-37b0-4f07-a94a-d8c71168145d"/?format=json>`
 
 for json format only.
