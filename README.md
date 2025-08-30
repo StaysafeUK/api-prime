@@ -52,7 +52,7 @@ To get the prime factors of E 17+ this example E18 (999999999999999990), you wou
 
 `https://<api.domainname.co.uk/api>/divisible/999999999999999999/format=json` this will generate a Celery Task ID example 6a862855-37b0-4f07-a94a-d8c71168145d.
 
-You can then check the status, and result of the task by making a GET request to the following URL: `https://<api.domainname.co.uk/api/task_id/6a862855-37b0-4f07-a94a-d8c71168145d/?format=json`
+You can then check the status, and result of the task by making a GET request to the following URL: `https://<api.domainname.co.uk/api/task_status/6a862855-37b0-4f07-a94a-d8c71168145d/?format=json`
 
 The API would return the following JSON response:
 
