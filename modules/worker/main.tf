@@ -72,6 +72,10 @@ exec &> /var/log/startup-celery.log
 apt-get update
 apt-get install -y python3-pip git python3-venv google-cloud-sdk
 
+# 2. Install New Relic Agent.
+curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash && sudo NEW_RELIC_API_KEY=NRAK-H0ATRYM74RY2Q4L7KXE21VOWDM9 NEW_RELIC_ACCOUNT_ID=3547995 NEW_RELIC_REGION=EU /usr/local/bin/newrelic install -y
+
+
 # Fetch Git Credentials
 GIT_USER=$(gcloud secrets versions access latest --secret="git-user" --project="archejreterra")
 GIT_PAT=$(gcloud secrets versions access latest --secret="git-pat" --project="archejreterra")

@@ -101,12 +101,15 @@ resource "google_compute_instance" "vm" {
     apt-get update
     apt-get install -y python3-pip git python3-venv google-cloud-sdk jq ufw
 
-    # 2. Fetch Git Credentials.
+    # 2. Install New Relic Agent.
+    curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash && sudo NEW_RELIC_API_KEY=NRAK-H0ATRYM74RY2Q4L7KXE21VOWDM9 NEW_RELIC_ACCOUNT_ID=3547995 NEW_RELIC_REGION=EU /usr/local/bin/newrelic install -y
+
+    # 3. Fetch Git Credentials.
     echo "Fetching Git User and PAT from Secret Manager..."
     GIT_USER=$(gcloud secrets versions access latest --secret="git-user" --project="archejreterra")
     GIT_PAT=$(gcloud secrets versions access latest --secret="git-pat" --project="archejreterra")
 
-    # 3. Clone Repository.
+    # 4. Clone Repository.
     echo "Cloning private repository..."
     git clone --branch primeworker "https://$GIT_USER:$GIT_PAT@github.com/StaysafeUK/${var.git_project}.git" /srv/api-prime
     if [ $? -ne 0 ]; then
@@ -114,15 +117,15 @@ resource "google_compute_instance" "vm" {
         exit 1
     fi
 
-    # 4. Setup Virtual Environment.
+    # 5. Setup Virtual Environment.
     echo "Setting up Python virtual environment..."
     python3 -m venv /srv/api-prime/venv
     
-    # 5. Install Python dependencies.
+    # 6. Install Python dependencies.
     echo "Installing Python dependencies..."
     /srv/api-prime/venv/bin/pip install -r /srv/api-prime/requirements.txt
 
-    # 6. Configure Django Project.
+    # 7. Configure Django Project.
     echo "Configuring Django..."
     SETTINGS_FILE=/srv/api-prime/divisible_api/divisible_api/settings.py
     if [ ! -f "$SETTINGS_FILE" ]; then
@@ -146,7 +149,7 @@ resource "google_compute_instance" "vm" {
         exit 1
     fi
     
-    # 7. Start Django App.
+    # 8. Start Django App.
     echo "Starting Django app..."
     cd /srv/api-prime/divisible_api
     /srv/api-prime/venv/bin/python3 manage.py migrate
@@ -159,7 +162,7 @@ resource "google_compute_instance" "vm" {
     export REDIS_HOST=$(curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/attributes/redis-host)
     /srv/api-prime/venv/bin/gunicorn divisible_api.wsgi:application --bind 0.0.0.0:8000 --access-logfile /var/log/gunicorn_access.log --error-logfile /var/log/gunicorn_error.log &
 
-    # 8. Verify Processes.
+    # 9. Verify Processes.
     echo "--- Verifying Gunicorn process ---"
     sleep 5 # give gunicorn a moment to start
     ps aux | grep gunicorn
