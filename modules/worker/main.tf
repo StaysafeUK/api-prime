@@ -77,6 +77,7 @@ NEW_RELIC_API_KEY=$(gcloud secrets versions access latest --secret="new-relic-ap
 curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash && sudo NEW_RELIC_API_KEY=$NEW_RELIC_API_KEY NEW_RELIC_ACCOUNT_ID=3547995 NEW_RELIC_REGION=EU /usr/local/bin/newrelic install -y
 
 
+
 # Fetch Git Credentials
 GIT_USER=$(gcloud secrets versions access latest --secret="git-user" --project="archejreterra")
 GIT_PAT=$(gcloud secrets versions access latest --secret="git-pat" --project="archejreterra")
