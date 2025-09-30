@@ -102,7 +102,8 @@ resource "google_compute_instance" "vm" {
     apt-get install -y python3-pip git python3-venv google-cloud-sdk jq ufw
 
     # 2. Install New Relic Agent.
-    curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash && sudo NEW_RELIC_API_KEY=NRAK-H0ATRYM74RY2Q4L7KXE21VOWDM9 NEW_RELIC_ACCOUNT_ID=3547995 NEW_RELIC_REGION=EU /usr/local/bin/newrelic install -y
+    NEW_RELIC_API_KEY=$(gcloud secrets versions access latest --secret="new-relic-api-key" --project="archejreterra")
+    curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash && sudo NEW_RELIC_API_KEY=$NEW_RELIC_API_KEY NEW_RELIC_ACCOUNT_ID=3547995 NEW_RELIC_REGION=EU /usr/local/bin/newrelic install -y
 
     # 3. Fetch Git Credentials.
     echo "Fetching Git User and PAT from Secret Manager..."
@@ -300,4 +301,21 @@ resource "google_compute_firewall" "allow_lb_traffic" {
 
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["http-server"]
+}
+
+resource "google_compute_firewall" "allow_new_relic_egress" {
+  name    = "${var.vm-name}-allow-new-relic-egress"
+  network = "default"
+  direction = "EGRESS"
+  allow {
+    protocol = "tcp"
+    ports    = ["443"]
+  }
+  destination_ranges = [
+    "162.247.240.0/22",
+    "152.38.128.0/19",
+    "185.221.84.0/22",
+    "212.32.0.0/20",
+    "64.251.192.0/20"
+  ]
 }

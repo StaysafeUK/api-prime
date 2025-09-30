@@ -6,6 +6,7 @@ __pycache__/
 *.py[cod]
 node_modules/
 scripts/
+!/scripts/newrelic.sh
 cloudinary_python.txt
 credentials.json
 .terraform/
