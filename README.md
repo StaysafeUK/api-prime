@@ -10,6 +10,9 @@ This API provides a simple way to find the prime factors of a given integer, lis
 
 ## How to Use
 
+For New Relic monitoring run API-PRIME/scripts/newrelic.sh to add new-relic-api-key to Google
+secrets manager FIRST:
+
 To use the API, you need to deploy the infrastructure using Terraform. The following variables are required:
 
 - `git_user`            : Your GitHub username.
