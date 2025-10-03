@@ -57,7 +57,7 @@ resource "google_compute_instance" "vm" {
   name         = "${var.vm-name}-${count.index}"
   machine_type = "n1-standard-2"
   zone         = "europe-west1-b"
-  tags         = concat([var.vm-name, "http-server", "django-api"], var.vm_tags)
+  tags         = concat([var.vm-name, "http-server", "django-api","allow-ssh", "allow-internet-egress-dev"], var.vm_tags)
 
   lifecycle {
     ignore_changes = [
@@ -183,9 +183,9 @@ output "external_ip" {
   value = google_compute_instance.vm[*].network_interface[0].access_config[0].nat_ip
 }
 
-resource "google_compute_global_address" "lb_ip" {
-  count  = var.instance_count > 1 ? 1 : 0
-  name   = "${var.vm-name}-lb-ip"
+
+data "google_compute_global_address" "lb_ip" {
+  name = "api-prime-static-ip"
 }
 
 resource "google_compute_instance_group" "unmanaged" {
@@ -254,8 +254,7 @@ resource "google_compute_global_forwarding_rule" "forwarding_rule" {
   count                 = var.instance_count > 1 ? 1 : 0
   name                  = "${var.vm-name}-forwarding-rule"
   target                = google_compute_target_http_proxy.http_proxy[0].self_link
-  ip_address            = google_compute_global_address.lb_ip[0].address
-  port_range            = "8080"
+  ip_address            = data.google_compute_global_address.lb_ip.address
   load_balancing_scheme = "EXTERNAL_MANAGED"
 }
 
@@ -278,7 +277,7 @@ resource "google_compute_global_forwarding_rule" "forwarding_rule_https" {
   count                 = var.instance_count > 1 ? 1 : 0
   name                  = "${var.vm-name}-forwarding-rule-https"
   target                = google_compute_target_https_proxy.https_proxy[0].self_link
-  ip_address            = google_compute_global_address.lb_ip[0].address
+  ip_address            = data.google_compute_global_address.lb_ip.address
   port_range            = "443"
   load_balancing_scheme = "EXTERNAL_MANAGED"
 }

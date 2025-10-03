@@ -10,6 +10,8 @@ resource "google_secret_manager_secret" "git-user-secret" {
   replication {
     auto {}
   }
+
+  depends_on = [google_project_service.secretmanager_api]
 }
 
 resource "google_secret_manager_secret_version" "git-user-secret-version" {
@@ -30,6 +32,8 @@ resource "google_secret_manager_secret" "git-pat-secret" {
   replication {
     auto {}
   }
+
+  depends_on = [google_project_service.secretmanager_api]
 }
 
 resource "google_secret_manager_secret_version" "git-pat-secret-version" {
@@ -50,6 +54,8 @@ resource "google_secret_manager_secret" "allowed-hosts-ips-secret" {
   replication {
     auto {}
   }
+
+  depends_on = [google_project_service.secretmanager_api]
 }
 
 resource "google_secret_manager_secret_version" "allowed-hosts-ips-secret-version" {
