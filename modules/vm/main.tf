@@ -73,9 +73,7 @@ resource "google_compute_instance" "vm" {
 
   network_interface {
     network = "default"
-    access_config {
-      // Ephemeral external IP
-    }
+
   }
 
   service_account {
@@ -179,9 +177,7 @@ output "ip" {
   value = google_compute_instance.vm[*].network_interface[0].network_ip
 }
 
-output "external_ip" {
-  value = google_compute_instance.vm[*].network_interface[0].access_config[0].nat_ip
-}
+
 
 
 resource "google_compute_global_address" "lb_ip" {
@@ -255,6 +251,7 @@ resource "google_compute_global_forwarding_rule" "forwarding_rule" {
   name                  = "${var.vm-name}-forwarding-rule"
   target                = google_compute_target_http_proxy.http_proxy[0].self_link
   ip_address            = google_compute_global_address.lb_ip.address
+  port_range            = "80"
   load_balancing_scheme = "EXTERNAL_MANAGED"
 }
 
