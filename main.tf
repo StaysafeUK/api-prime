@@ -111,7 +111,7 @@ module "worker" {
 
 resource "local_file" "IPs" {
   filename = "./inventory.csv"
-  content  = templatefile("manifest.tftpl", { ip_addrs = flatten(module.vm.*.external_ip) })
+  content  = templatefile("manifest.tftpl", { ip_addrs = flatten(module.vm.*.ip) })
 }
 
 data "external" "firewall_exists" {
@@ -128,5 +128,5 @@ resource "google_compute_firewall" "allow-http-8000" {
     ports    = ["8000"]
   }
 
-  source_ranges = ["0.0.0.0/0"]
+  source_ranges = ["130.211.0.0/22", "35.191.0.0/16"]
 }

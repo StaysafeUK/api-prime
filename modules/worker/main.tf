@@ -23,7 +23,7 @@ resource "google_redis_instance" "broker" {
         nanos   = 0
       }
     }
-  }
+  } 
 }
 
 resource "google_compute_instance" "celery_worker" {
@@ -31,7 +31,7 @@ resource "google_compute_instance" "celery_worker" {
   name         = "${var.vm-name}-celery-worker-${count.index}"
   machine_type = "n1-standard-1"
   zone         = "europe-west1-b"
-  tags         = concat([var.vm-name, "celery-worker", "http-server", "django-api","allow-ssh", "allow-internet-egress-dev"], var.vm_tags)
+  tags         = concat([var.vm-name, "celery-worker", "http-server", "django-api","allow-ssh", "allow-dns-egress-dev","allow-internet-egress-dev"], var.vm_tags)
 
   lifecycle {
     ignore_changes = [
