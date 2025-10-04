@@ -46,10 +46,8 @@ resource "google_compute_instance" "celery_worker" {
   }
 
   network_interface {
-    network = "default"
-    access_config {
-      // Ephemeral external IP
-    }
+    subnetwork = "projects/archejrenet/regions/europe-west1/subnetworks/dev_subnet"
+    subnetwork_project = "archejrenet"
   }
 
   service_account {
