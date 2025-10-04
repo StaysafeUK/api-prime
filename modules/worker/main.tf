@@ -7,6 +7,10 @@ terraform {
 }
 
 data "google_compute_subnetwork" "dev_subnet" {
+  name    = "dev-subnet"
+  project = "archejrenet"
+  region  = var.region
+}
 
 resource "google_redis_instance" "broker" {
   name           = var.redis_name
@@ -26,10 +30,6 @@ resource "google_redis_instance" "broker" {
       }
     }
   }
-}
-  name    = "dev-subnet"
-  project = "archejrenet"
-  region  = var.region
 }
 
 resource "google_compute_instance" "celery_worker" {
