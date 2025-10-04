@@ -39,6 +39,7 @@ resource "google_compute_instance" "vm" {
   }
 
   service_account {
+    email  = "terra-svc-net@archejrenet.iam.gserviceaccount.com"
     scopes = ["cloud-platform"]
   }
 

@@ -56,6 +56,7 @@ resource "google_compute_instance" "celery_worker" {
   }
 
   service_account {
+    email  = "terra-svc-net@archejrenet.iam.gserviceaccount.com"
     scopes = ["cloud-platform"]
   }
 
