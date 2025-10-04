@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    google = {
+      source = "hashicorp/google"
+    }
+  }
+}
+
 data "google_compute_subnetwork" "dev_subnet" {
   name    = "dev-subnet"
   project = "archejrenet"

@@ -1,3 +1,14 @@
+variable "vm-name" {}
+variable "git_user" {}
+variable "git_pat" { sensitive = true }
+variable "git_project" {}
+variable "cloud_project" {}
+variable "instance_count" {}
+variable "region" {}
+variable "domain_name" {}
+variable "redis_host" {}
+variable "vm_tags" { type = list(string) }
+
 data "google_compute_subnetwork" "dev_subnet" {
   name    = "dev-subnet"
   project = "archejrenet"

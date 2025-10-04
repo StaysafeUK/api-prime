@@ -91,6 +91,7 @@ module "vm" {
   region           = var.region
   domain_name      = var.domain_name
   redis_host       = module.worker.redis_host
+  vm_tags          = ["api-frontend"]
 }
 
 module "worker" {
