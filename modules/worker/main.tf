@@ -46,8 +46,8 @@ resource "google_compute_instance" "celery_worker" {
   }
 
   network_interface {
-    subnetwork = "projects/archejrenet/regions/europe-west1/subnetworks/dev_subnet"
-    subnetwork_project = "archejrenet"
+    network    = "projects/archejrenet/global/networks/host-vpc"
+    subnetwork = "dev-subnet"
   }
 
   service_account {
