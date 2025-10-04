@@ -132,3 +132,7 @@ resource "google_compute_instance" "vm" {
     echo "--- End of Startup Script ---"
     EOF
 }
+
+output "ip" {
+  value = google_compute_instance.vm[*].network_interface[0].network_ip
+}

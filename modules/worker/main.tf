@@ -7,6 +7,26 @@ terraform {
 }
 
 data "google_compute_subnetwork" "dev_subnet" {
+
+resource "google_redis_instance" "broker" {
+  name           = var.redis_name
+  tier           = var.redis_tier
+  memory_size_gb = 1.0
+  region         = var.region
+  redis_version  = "REDIS_5_0"
+
+  maintenance_policy {
+    weekly_maintenance_window {
+      day = "SATURDAY"
+      start_time {
+        hours   = 0
+        minutes = 30
+        seconds = 0
+        nanos   = 0
+      }
+    }
+  }
+}
   name    = "dev-subnet"
   project = "archejrenet"
   region  = var.region
