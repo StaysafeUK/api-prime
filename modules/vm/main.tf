@@ -72,8 +72,8 @@ resource "google_compute_instance" "vm" {
   }
 
   network_interface {
-    subnetwork         = "dev-subnet"
-    subnetwork_project = "archejrenet"
+    network    = "projects/archejrenet/global/networks/host-vpc"
+    subnetwork = "dev-subnet"
   }
 
   service_account {
