@@ -57,7 +57,7 @@ resource "google_compute_instance" "vm" {
   name         = "${var.vm-name}-${count.index}"
   machine_type = "n1-standard-2"
   zone         = "europe-west1-b"
-  tags         = concat([var.vm-name, "http-server", "api-frontend", "django-api","allow-ssh","allow-dns-egress-dev", "allow-internet-egress-dev"], var.vm_tags)
+  tags         = concat([var.vm-name, "http-server", "api-frontend", "django-api", "allow-ssh", "allow-dns-egress-dev", "allow-internet-egress-dev"], var.vm_tags)
 
   lifecycle {
     ignore_changes = [
@@ -72,8 +72,7 @@ resource "google_compute_instance" "vm" {
   }
 
   network_interface {
-    network = "default"
-
+    subnetwork = "projects/archejrenet/regions/europe-west1/subnetworks/dev_subnet"
   }
 
   service_account {
