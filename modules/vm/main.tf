@@ -1,56 +1,8 @@
-
-
-
-
-variable "vm-name" {
-  description = "api-prime"
+data "google_compute_subnetwork" "dev_subnet" {
+  name    = "dev-subnet"
+  project = "archejrenet"
+  region  = var.region
 }
-
-variable "git_user" {
-  description = "The GitHub username for cloning the private repository."
-  type        = string
-}
-
-variable "git_pat" {
-  description = "The Personal Access Token for cloning the private Git repository."
-  type        = string
-  sensitive   = true
-}
-
-variable "git_project" {
-  description = "The GitHub project name to be cloned."
-  type        = string
-}
-
-variable "cloud_project" {
-  description = "The GCP project ID."
-  type        = string
-}
-
-variable "instance_count" {
-  description = "The number of VM instances to create."
-  type        = number
-  default     = 1
-}
-
-variable "region" {
-  description = "The region to deploy the resources in."
-  type        = string
-  default     = "europe-west1"
-}
-
-variable "vm_tags" {
-  description = "A list of tags to apply to the VM instances."
-  type        = list(string)
-  default     = []
-}
-
-variable "redis_host" {
-  description = "The hostname or IP address of the Redis instance."
-  type        = string
-}
-
-
 
 resource "google_compute_instance" "vm" {
   count        = var.instance_count
@@ -72,8 +24,7 @@ resource "google_compute_instance" "vm" {
   }
 
   network_interface {
-    network    = "projects/archejrenet/global/networks/host-vpc"
-    subnetwork = "dev-subnet"
+    subnetwork = data.google_compute_subnetwork.dev_subnet.self_link
   }
 
   service_account {
@@ -100,13 +51,13 @@ resource "google_compute_instance" "vm" {
     apt-get install -y python3-pip git python3-venv google-cloud-sdk jq ufw
 
     # 2. Install New Relic Agent.
-    NEW_RELIC_API_KEY=$(gcloud secrets versions access latest --secret="new-relic-api-key" --project="archejreterra")
+    NEW_RELIC_API_KEY=$(gcloud secrets versions access latest --secret="new-relic-api-key" --project="archejrenet")
     curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash && sudo NEW_RELIC_API_KEY=$NEW_RELIC_API_KEY NEW_RELIC_ACCOUNT_ID=3547995 NEW_RELIC_REGION=EU /usr/local/bin/newrelic install -y
 
     # 3. Fetch Git Credentials.
     echo "Fetching Git User and PAT from Secret Manager..."
-    GIT_USER=$(gcloud secrets versions access latest --secret="git-user" --project="archejreterra")
-    GIT_PAT=$(gcloud secrets versions access latest --secret="git-pat" --project="archejreterra")
+    GIT_USER=$(gcloud secrets versions access latest --secret="git-user" --project="archejrenet")
+    GIT_PAT=$(gcloud secrets versions access latest --secret="git-pat" --project="archejrenet")
 
     # 4. Clone Repository.
     echo "Cloning private repository..."
@@ -169,149 +120,4 @@ resource "google_compute_instance" "vm" {
     netstat -tulpn | grep 8000
     echo "--- End of Startup Script ---"
     EOF
-}
-
-
-
-output "ip" {
-  value = google_compute_instance.vm[*].network_interface[0].network_ip
-}
-
-
-
-
-resource "google_compute_global_address" "lb_ip" {
-  name = "api-prime-static-ip"
-}
-
-resource "google_compute_instance_group" "unmanaged" {
-  count = var.instance_count > 1 ? 1 : 0
-  name  = "${var.vm-name}-unmanaged-instance-group"
-  zone  = "europe-west1-b"
-
-  instances = google_compute_instance.vm[*].self_link
-
-  named_port {
-    name = "http"
-    port = "8000"
-  }
-}
-
-resource "google_compute_health_check" "http_health_check" {
-  count               = var.instance_count > 1 ? 1 : 0
-  name                = "${var.vm-name}-http-health-check"
-  check_interval_sec  = 5
-  timeout_sec         = 5
-  healthy_threshold   = 2
-  unhealthy_threshold = 2
-
-  http_health_check {
-    port         = 8000
-    request_path = "/api/health/"
-  }
-}
-
-resource "google_compute_backend_service" "backend_service" {
-  count                 = var.instance_count > 1 ? 1 : 0
-  name                  = "${var.vm-name}-backend-service"
-  protocol              = "HTTP"
-  port_name             = "http"
-  timeout_sec           = 12600
-  load_balancing_scheme = "EXTERNAL_MANAGED"
-  health_checks         = [google_compute_health_check.http_health_check[0].self_link]
-
-  backend {
-    group = google_compute_instance_group.unmanaged[0].self_link
-  }
-
-  log_config {
-    enable      = true
-    sample_rate = 1.0
-  }
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-resource "google_compute_url_map" "url_map" {
-  count           = var.instance_count > 1 ? 1 : 0
-  name            = "${var.vm-name}-url-map"
-  default_service = google_compute_backend_service.backend_service[0].self_link
-}
-
-resource "google_compute_target_http_proxy" "http_proxy" {
-  count   = var.instance_count > 1 ? 1 : 0
-  name    = "${var.vm-name}-http-proxy"
-  url_map = google_compute_url_map.url_map[0].self_link
-}
-
-resource "google_compute_global_forwarding_rule" "forwarding_rule" {
-  count                 = var.instance_count > 1 ? 1 : 0
-  name                  = "${var.vm-name}-forwarding-rule"
-  target                = google_compute_target_http_proxy.http_proxy[0].self_link
-  ip_address            = google_compute_global_address.lb_ip.address
-  port_range            = "80"
-  load_balancing_scheme = "EXTERNAL_MANAGED"
-}
-
-resource "google_compute_managed_ssl_certificate" "ssl_certificate" {
-  count    = var.instance_count > 1 ? 1 : 0
-  name     = "${var.vm-name}-ssl-certificate"
-  managed {
-    domains = [var.domain_name]
-  }
-}
-
-resource "google_compute_target_https_proxy" "https_proxy" {
-  count             = var.instance_count > 1 ? 1 : 0
-  name              = "${var.vm-name}-https-proxy"
-  url_map           = google_compute_url_map.url_map[0].self_link
-  ssl_certificates = [google_compute_managed_ssl_certificate.ssl_certificate[0].self_link]
-}
-
-resource "google_compute_global_forwarding_rule" "forwarding_rule_https" {
-  count                 = var.instance_count > 1 ? 1 : 0
-  name                  = "${var.vm-name}-forwarding-rule-https"
-  target                = google_compute_target_https_proxy.https_proxy[0].self_link
-  ip_address            = google_compute_global_address.lb_ip.address
-  port_range            = "443"
-  load_balancing_scheme = "EXTERNAL_MANAGED"
-}
-
-variable "domain_name" {
-  description = "The domain name for the SSL certificate."
-  type        = string
-  default     = "api-prime.example.com"
-}
-
-resource "google_compute_firewall" "allow_lb_traffic" {
-  count   = var.instance_count > 1 ? 1 : 0
-  name    = "${var.vm-name}-allow-lb-traffic"
-  network = "default"
-
-  allow {
-    protocol = "tcp"
-    ports    = ["8000"]
-  }
-
-  source_ranges = ["0.0.0.0/0"]
-  target_tags   = ["http-server"]
-}
-
-resource "google_compute_firewall" "allow_new_relic_egress" {
-  name    = "${var.vm-name}-allow-new-relic-egress"
-  network = "default"
-  direction = "EGRESS"
-  allow {
-    protocol = "tcp"
-    ports    = ["443"]
-  }
-  destination_ranges = [
-    "162.247.240.0/22",
-    "152.38.128.0/19",
-    "185.221.84.0/22",
-    "212.32.0.0/20",
-    "64.251.192.0/20"
-  ]
 }

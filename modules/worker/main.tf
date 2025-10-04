@@ -1,29 +1,7 @@
-terraform {
-  required_providers {
-    google = {
-      source = "hashicorp/google"
-    }
-  }
-}
-
-resource "google_redis_instance" "broker" {
-  name           = var.redis_name
-  tier           = var.redis_tier
-  memory_size_gb = 1.0
-  region         = var.region
-  redis_version  = "REDIS_5_0"
-
-  maintenance_policy {
-    weekly_maintenance_window {
-      day = "SATURDAY"
-      start_time {
-        hours   = 0
-        minutes = 30
-        seconds = 0
-        nanos   = 0
-      }
-    }
-  } 
+data "google_compute_subnetwork" "dev_subnet" {
+  name    = "dev-subnet"
+  project = "archejrenet"
+  region  = var.region
 }
 
 resource "google_compute_instance" "celery_worker" {
@@ -46,8 +24,7 @@ resource "google_compute_instance" "celery_worker" {
   }
 
   network_interface {
-    network    = "projects/archejrenet/global/networks/host-vpc"
-    subnetwork = "dev-subnet"
+    subnetwork = data.google_compute_subnetwork.dev_subnet.self_link
   }
 
   service_account {
@@ -71,14 +48,14 @@ apt-get update
 apt-get install -y python3-pip git python3-venv google-cloud-sdk
 
 # 2. Install New Relic Agent.
-NEW_RELIC_API_KEY=$(gcloud secrets versions access latest --secret="new-relic-api-key" --project="archejreterra")
+NEW_RELIC_API_KEY=$(gcloud secrets versions access latest --secret="new-relic-api-key" --project="archejrenet")
 curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash && sudo NEW_RELIC_API_KEY=$NEW_RELIC_API_KEY NEW_RELIC_ACCOUNT_ID=3547995 NEW_RELIC_REGION=EU /usr/local/bin/newrelic install -y
 
 
 
 # Fetch Git Credentials
-GIT_USER=$(gcloud secrets versions access latest --secret="git-user" --project="archejreterra")
-GIT_PAT=$(gcloud secrets versions access latest --secret="git-pat" --project="archejreterra")
+GIT_USER=$(gcloud secrets versions access latest --secret="git-user" --project="archejrenet")
+GIT_PAT=$(gcloud secrets versions access latest --secret="git-pat" --project="archejrenet")
 
 # Clone the repository
 git clone --branch primeworker "https://$GIT_USER:$GIT_PAT@github.com/StaysafeUK/api-prime.git" /srv/prime-number-api
@@ -98,21 +75,4 @@ cd /srv/prime-number-api/divisible_api
 /srv/prime-number-api/venv/bin/celery -A divisible_api.celery_app worker --loglevel=info &
 EOF
 
-}
-
-resource "google_compute_firewall" "allow_new_relic_egress" {
-  name    = "${var.vm-name}-worker-allow-new-relic-egress"
-  network = "default"
-  direction = "EGRESS"
-  allow {
-    protocol = "tcp"
-    ports    = ["443"]
-  }
-  destination_ranges = [
-    "162.247.240.0/22",
-    "152.38.128.0/19",
-    "185.221.84.0/22",
-    "212.32.0.0/20",
-    "64.251.192.0/20"
-  ]
 }
