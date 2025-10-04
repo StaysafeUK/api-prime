@@ -1,6 +1,6 @@
 provider "google" {
   # credentials = file("credentials.json")
-  project     = "${var.cloud_project}"
+  project     = "archejrenet-dev-03102025"
   region      = "europe-west1"
   zone        = "europe-west1-b"
 }
@@ -22,13 +22,13 @@ terraform {
 }
 
 resource "google_project_iam_member" "redis_permission" {
-  project = var.cloud_project
+  project = "archejrenet-dev-03102025"
   role    = "roles/redis.editor"
   member  = "serviceAccount:754166336149-compute@developer.gserviceaccount.com"
 }
 
 resource "google_project_service" "redis_api" {
-  project            = var.cloud_project
+  project            = "archejrenet-dev-03102025"
   service            = "redis.googleapis.com"
   disable_on_destroy = false
 }
@@ -86,7 +86,7 @@ module "vm" {
   git_user         = var.git_user
   git_pat          = var.git_pat
   git_project      = var.git_project
-  cloud_project    = var.cloud_project
+  cloud_project    = "archejrenet-dev-03102025"
   instance_count   = var.instance_count
   region           = var.region
   domain_name      = var.domain_name
@@ -96,7 +96,7 @@ module "vm" {
 
 module "worker" {
   source              = "./modules/worker"
-  cloud_project       = var.cloud_project
+  cloud_project       = "archejrenet-dev-03102025"
   region              = var.region
   api_server_ip       = module.vm.ip[0]
   celery_worker_count = var.celery_worker_count
@@ -116,13 +116,19 @@ resource "local_file" "IPs" {
 }
 
 data "external" "firewall_exists" {
-  program = ["bash", "-c", "gcloud compute firewall-rules describe allow-http-8000 --project=${var.cloud_project} >/dev/null 2>&1 && echo '{\"exists\": \"true\"}' || echo '{\"exists\": \"false\"}'"]
+  program = ["bash", "-c", "gcloud compute firewall-rules describe allow-http-8000 --project=archejrenet >/dev/null 2>&1 && echo '{\"exists\": \"true\"}' || echo '{\"exists\": \"false\"}'"]
+}
+
+provider "google" {
+  alias   = "host"
+  project = "archejrenet"
 }
 
 resource "google_compute_firewall" "allow-http-8000" {
-  count   = data.external.firewall_exists.result.exists == "true" ? 0 : 1
-  name    = "allow-http-8000"
-  network = "default"
+  provider = google.host
+  count    = data.external.firewall_exists.result.exists == "true" ? 0 : 1
+  name     = "allow-http-8000"
+  network  = "default"
 
   allow {
     protocol = "tcp"

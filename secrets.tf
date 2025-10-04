@@ -4,7 +4,7 @@ data "external" "git-user-secret-exists" {
 
 resource "google_secret_manager_secret" "git-user-secret" {
   count     = data.external.git-user-secret-exists.result.exists == "true" ? 0 : 1
-  project   = var.cloud_project
+  project   = "archejrenet-dev-03102025"
   secret_id = "git-user"
 
   replication {
@@ -26,7 +26,7 @@ data "external" "git-pat-secret-exists" {
 
 resource "google_secret_manager_secret" "git-pat-secret" {
   count     = data.external.git-pat-secret-exists.result.exists == "true" ? 0 : 1
-  project   = var.cloud_project
+  project   = "archejrenet-dev-03102025"
   secret_id = "git-pat"
 
   replication {
@@ -48,7 +48,7 @@ data "external" "allowed-hosts-ips-secret-exists" {
 
 resource "google_secret_manager_secret" "allowed-hosts-ips-secret" {
   count     = data.external.allowed-hosts-ips-secret-exists.result.exists == "true" ? 0 : 1
-  project   = var.cloud_project
+  project   = "archejrenet-dev-03102025"
   secret_id = "allowed-hosts-ips"
 
   replication {
