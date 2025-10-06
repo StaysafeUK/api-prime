@@ -1,5 +1,5 @@
 provider "google" {
-  # credentials = file("credentials.json")
+  credentials = file("credentials.json")
   project     = "archejrenet-dev-03102025"
   region      = "europe-west1"
   zone        = "europe-west1-b"
@@ -24,13 +24,27 @@ terraform {
 resource "google_project_iam_member" "redis_permission" {
   project = "archejrenet-dev-03102025"
   role    = "roles/redis.editor"
-  member  = "serviceAccount:754166336149-compute@developer.gserviceaccount.com"
+  member  = "serviceAccount:terra-svc-net@archejrenet.iam.gserviceaccount.com"
 }
 
 resource "google_project_service" "redis_api" {
   project            = "archejrenet-dev-03102025"
   service            = "redis.googleapis.com"
   disable_on_destroy = false
+}
+
+resource "google_project_service" "cloudresourcemanager_api" {
+  project            = "archejrenet-dev-03102025"
+  service            = "cloudresourcemanager.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "secretmanager_api" {
+  project            = "archejrenet-dev-03102025"
+  service            = "secretmanager.googleapis.com"
+  disable_on_destroy = false
+
+  depends_on = [google_project_service.cloudresourcemanager_api]
 }
 
 variable "cloud_project" {
@@ -120,7 +134,8 @@ data "external" "firewall_exists" {
 }
 
 provider "google" {
-  alias   = "host"
+  alias       = "host"
+  credentials = file("credentials.json")
   project = "archejrenet"
 }
 
@@ -128,7 +143,7 @@ resource "google_compute_firewall" "allow-http-8000" {
   provider = google.host
   count    = data.external.firewall_exists.result.exists == "true" ? 0 : 1
   name     = "allow-http-8000"
-  network  = "default"
+  network  = "host-vpc"
 
   allow {
     protocol = "tcp"

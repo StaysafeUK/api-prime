@@ -1,3 +1,14 @@
+
+terraform {
+  required_version = ">= 1.0.11"
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = ">= 4.5.0"
+    }
+  }
+}
+
 variable "vm-name" {}
 variable "git_user" {}
 variable "git_pat" { sensitive = true }

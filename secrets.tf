@@ -1,17 +1,14 @@
 data "external" "git-user-secret-exists" {
-  program = ["bash", "-c", "gcloud secrets describe git-user --project=${var.cloud_project} >/dev/null 2>&1 && echo '{\"exists\": \"true\"}' || echo '{\"exists\": \"false\"}'"]
+  program = ["bash", "-c", "gcloud secrets describe git-user --project=archejrenet-dev-03102025 >/dev/null 2>&1 && echo '{\"exists\": \"true\"}' || echo '{\"exists\": \"false\"}'"]
 }
 
 resource "google_secret_manager_secret" "git-user-secret" {
   count     = data.external.git-user-secret-exists.result.exists == "true" ? 0 : 1
   project   = "archejrenet-dev-03102025"
   secret_id = "git-user"
-
   replication {
     auto {}
   }
-
-  depends_on = [google_project_service.secretmanager_api]
 }
 
 resource "google_secret_manager_secret_version" "git-user-secret-version" {
@@ -21,7 +18,7 @@ resource "google_secret_manager_secret_version" "git-user-secret-version" {
 }
 
 data "external" "git-pat-secret-exists" {
-  program = ["bash", "-c", "gcloud secrets describe git-pat --project=${var.cloud_project} >/dev/null 2>&1 && echo '{\"exists\": \"true\"}' || echo '{\"exists\": \"false\"}'"]
+  program = ["bash", "-c", "gcloud secrets describe git-pat --project=archejrenet-dev-03102025 >/dev/null 2>&1 && echo '{\"exists\": \"true\"}' || echo '{\"exists\": \"false\"}'"]
 }
 
 resource "google_secret_manager_secret" "git-pat-secret" {
@@ -32,8 +29,6 @@ resource "google_secret_manager_secret" "git-pat-secret" {
   replication {
     auto {}
   }
-
-  depends_on = [google_project_service.secretmanager_api]
 }
 
 resource "google_secret_manager_secret_version" "git-pat-secret-version" {
@@ -43,7 +38,7 @@ resource "google_secret_manager_secret_version" "git-pat-secret-version" {
 }
 
 data "external" "allowed-hosts-ips-secret-exists" {
-  program = ["bash", "-c", "gcloud secrets describe allowed-hosts-ips --project=${var.cloud_project} >/dev/null 2>&1 && echo '{\"exists\": \"true\"}' || echo '{\"exists\": \"false\"}'"]
+  program = ["bash", "-c", "gcloud secrets describe allowed-hosts-ips --project=archejrenet-dev-03102025 >/dev/null 2>&1 && echo '{\"exists\": \"true\"}' || echo '{\"exists\": \"false\"}'"]
 }
 
 resource "google_secret_manager_secret" "allowed-hosts-ips-secret" {
@@ -54,8 +49,6 @@ resource "google_secret_manager_secret" "allowed-hosts-ips-secret" {
   replication {
     auto {}
   }
-
-  depends_on = [google_project_service.secretmanager_api]
 }
 
 resource "google_secret_manager_secret_version" "allowed-hosts-ips-secret-version" {
