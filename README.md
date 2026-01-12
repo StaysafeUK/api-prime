@@ -71,7 +71,7 @@ Refresh Until result is given
 
 ## External LB 
 
-To find the external IP address of the Load blancer when two or more hosts are used use the following cloud command
+To find the external IP address of the Load balancer when two or more hosts are used use the following cloud command
 `gcloud compute forwarding-rules describe api-prime-forwarding-rule \--global \`                                                                                  
 `--project=GCP_PROJECT \`
 `--format="value(IPAddress)"`
