@@ -46,7 +46,7 @@ To get the prime factors of the number 12, you would make a GET request to the f
 
 ## External LB 
 
-To find the external IP address of the Load blancer when two or more hosts are used use the following cloud command
+To find the external IP address of the Load balancer when two or more hosts are used use the following cloud command
 `gcloud compute forwarding-rules describe api-prime-forwarding-rule \--global \`                                                                                  
 `--project=GCP_PROJECT \`
 `--format="value(IPAddress)"`
